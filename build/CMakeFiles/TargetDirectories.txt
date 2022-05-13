@@ -1,0 +1,3 @@
+/home/bsodium/Documents/GitHub/terrain-interpolation/build/CMakeFiles/rebuild_cache.dir
+/home/bsodium/Documents/GitHub/terrain-interpolation/build/CMakeFiles/edit_cache.dir
+/home/bsodium/Documents/GitHub/terrain-interpolation/build/CMakeFiles/main.dir

@@ -1,0 +1,7 @@
+[
+{
+  "directory": "/home/bsodium/Documents/GitHub/terrain-interpolation/build",
+  "command": "/usr/bin/g++ -g -Wall -Wextra -pedantic -Wno-comment -std=gnu++11 -o CMakeFiles/main.dir/src/main.cpp.o -c /home/bsodium/Documents/GitHub/terrain-interpolation/src/main.cpp",
+  "file": "/home/bsodium/Documents/GitHub/terrain-interpolation/src/main.cpp"
+}
+]
