@@ -1,0 +1,12 @@
+{
+  "files.associations": {
+    "*.js": "javascriptreact",
+    "vector": "cpp",
+    "*.tcc": "cpp",
+    "unordered_map": "cpp",
+    "fstream": "cpp",
+    "istream": "cpp",
+    "ostream": "cpp",
+    "sstream": "cpp"
+  }
+}

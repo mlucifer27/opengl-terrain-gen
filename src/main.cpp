@@ -20,9 +20,9 @@
 
 #include <math.h>
 
-//*************************************************************************
-// Function that draws a reference system
-//*************************************************************************
+/**
+ * Draws a basic RGB reference system.
+ */
 void DrawReferenceSystem()
 {
   // set the line width to 3.0
@@ -55,21 +55,10 @@ void DrawReferenceSystem()
   glLineWidth(1.0);
 }
 
-void display()
-{
-  // clear the screen with blue
-  glClear(GL_COLOR_BUFFER_BIT);
-
-  glPushMatrix();
-
-  DrawReferenceSystem();
-
-  glPopMatrix();
-
-  glutSwapBuffers();
-}
-
-void init(void)
+/**
+ * Initializes the OpenGL context.
+ */
+void initGL(void)
 {
   glClearColor(0.0, 0.0, 0.0, 0.0);
   glMatrixMode(GL_PROJECTION);
@@ -84,6 +73,26 @@ void init(void)
   gluLookAt(-6, 5, -6, 0, 0, 2, 0, 1, 0);
 }
 
+/**
+ * Display callback.
+ */
+void display()
+{
+  // clear the screen with blue
+  glClear(GL_COLOR_BUFFER_BIT);
+
+  glPushMatrix();
+
+  DrawReferenceSystem();
+
+  glPopMatrix();
+
+  glutSwapBuffers();
+}
+
+/**
+ * Reshape callback.
+ */
 void reshape(int width, int height)
 {
   // define the viewport transformation;
@@ -113,7 +122,7 @@ int main(int argc, char **argv)
   glutCreateWindow("Terrain interpolation demo");
 
   // initialize the OpenGL graphics state
-  init();
+  initGL();
 
   // set the display callback
   glutDisplayFunc(display);
