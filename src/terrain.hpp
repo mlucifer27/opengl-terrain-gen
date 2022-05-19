@@ -8,13 +8,23 @@
 class Terrain
 {
 private:
-  int glWidth;
-  int glHeight;
-  int glDepth;
+  int rows;
+  int columns;
+  float maxHeight;
+  float minHeight;
   std::vector<float> heightMap;
+  /**
+   * Updates the entire vertex OpenGL buffer (pretty heavy).
+   * @see updateGLBuffer(int, int)
+   */
+  void updateGLBuffer();
+  /**
+   * Updates a single vertex in the vertex OpenGL buffer (preferable when modifying few vertices).
+   */
+  void updateGLBuffer(int x, int y, float height);
 
 public:
-  Terrain(int width, int height, int depth);
+  Terrain(int rows, int columns);
   ~Terrain();
   /**
    * Randomize the terrain height.

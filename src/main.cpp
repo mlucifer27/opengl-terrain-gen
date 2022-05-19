@@ -15,69 +15,38 @@
 #include <windows.h>
 #endif
 // both linux and windows
+#define GL_GLEXT_PROTOTYPES
 #include <GL/gl.h>
+#include <GL/glu.h>
 #include <GLFW/glfw3.h>
 #endif
-
-Terrain *terrain = new Terrain(256, 256, 256);
-
-const char *GetGLErrorStr(GLenum err)
-{
-  switch (err)
-  {
-  case GL_NO_ERROR:
-    return "No error";
-  case GL_INVALID_ENUM:
-    return "Invalid enum";
-  case GL_INVALID_VALUE:
-    return "Invalid value";
-  case GL_INVALID_OPERATION:
-    return "Invalid operation";
-  case GL_STACK_OVERFLOW:
-    return "Stack overflow";
-  case GL_STACK_UNDERFLOW:
-    return "Stack underflow";
-  case GL_OUT_OF_MEMORY:
-    return "Out of memory";
-  default:
-    return "Unknown error";
-  }
-}
-
-void CheckGLError()
-{
-  while (true)
-  {
-    const GLenum err = glGetError();
-    if (GL_NO_ERROR == err)
-      break;
-
-    std::cout << "GL Error: " << GetGLErrorStr(err) << std::endl;
-  }
-}
 
 /**
  * Initializes the OpenGL context.
  */
-void initGL(void)
+void initGL(GLuint &vertex_buffer)
 {
-  glClearColor(0.0, 0.0, 0.0, 0.0);
+  glClearColor(0.15f, 0.15f, 0.15f, 1.0f);
   glMatrixMode(GL_PROJECTION);
   glLoadIdentity();
-  // gluPerspective(65.0, 1.0, 1.0, 100.0);
+  gluPerspective(65.0, 1.0, 1.0, 100.0);
 
   glShadeModel(GL_FLAT);
   glMatrixMode(GL_MODELVIEW);
   glLoadIdentity();
 
   // Place the camera
-  // gluLookAt(-6, 5, -6, 0, 0, 2, 0, 1, 0);
+  gluLookAt(-6, 5, -6, 0, 0, 2, 0, 1, 0);
+
+  // Create vertex buffer
+  glGenBuffers(1, &vertex_buffer);
+  glBindBuffer(GL_ARRAY_BUFFER, vertex_buffer);
 }
 
 /**
  * Display callback.
  */
-void render()
+void render(Terrain *terrain)
 {
   // clear the screen with blue
   glClear(GL_COLOR_BUFFER_BIT);
@@ -89,19 +58,6 @@ void render()
   terrain->drawReferenceSystem();
 
   glPopMatrix();
-}
-
-/**
- * Reshape callback.
- */
-void reshape(int width, int height)
-{
-  // define the viewport transformation;
-  glViewport(0, 0, width, height);
-  if (width < height)
-    glViewport(0, (height - width) / 2, width, width);
-  else
-    glViewport((width - height) / 2, 0, height, height);
 }
 
 /**
@@ -121,13 +77,27 @@ void error_callback(__attribute__((unused)) int error, __attribute__((unused)) c
   fprintf(stderr, "GLFW Error: %s\n", description);
 }
 
+void resize_callback(GLFWwindow *window, int width, int height)
+{
+  glViewport(0, 0, width, height);
+  glMatrixMode(GL_PROJECTION);
+  glLoadIdentity();
+  gluPerspective(65.0, (float)width / (float)height, 1.0, 100.0);
+  glMatrixMode(GL_MODELVIEW);
+}
+
 int main(__attribute__((unused)) int argc, __attribute__((unused)) char **argv)
 {
   // Generate a random terrain
-  terrain->randomize(); // TODO: remove this
+  Terrain *terrain = new Terrain(30, 30);
+  terrain->randomize();
+
+  // Initialize window
+  GLFWwindow *window;
+  // Initialize vertex buffer
+  GLuint vertex_buffer;
 
   // Initialize GLFW
-  GLFWwindow *window;
   if (!glfwInit())
     return -1;
 
@@ -140,7 +110,9 @@ int main(__attribute__((unused)) int argc, __attribute__((unused)) char **argv)
 
   glfwMakeContextCurrent(window);
   glfwSetKeyCallback(window, key_callback);
-  initGL();
+  glfwSetErrorCallback(error_callback);
+  glfwSetWindowSizeCallback(window, resize_callback);
+  initGL(vertex_buffer);
 
   // Loop until the user closes the window
   while (!glfwWindowShouldClose(window))
@@ -149,7 +121,7 @@ int main(__attribute__((unused)) int argc, __attribute__((unused)) char **argv)
     // Render
     glClear(GL_COLOR_BUFFER_BIT);
 
-    render();
+    render(terrain);
 
     /* Swap front and back buffers */
     glfwSwapBuffers(window);

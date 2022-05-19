@@ -1,12 +1,20 @@
 #include "terrain.hpp"
 #include <GLFW/glfw3.h>
+#include <limits>
+#include <GL/gl.h>
+#include <GL/glu.h>
+#define GL_GLEXT_PROTOTYPES
+#define GLFW_INCLUDE_NONE
 
-Terrain::Terrain(int width, int height, int depth)
+Terrain::Terrain(int rows, int columns)
 {
-  glWidth = width;
-  glHeight = height;
-  glDepth = depth;
-  heightMap = std::vector<float>(width * height);
+  this->rows = rows;
+  this->columns = columns;
+  // maxHeight is negative infinity
+  this->maxHeight = -std::numeric_limits<float>::infinity();
+  // minHeight is positive infinity
+  this->minHeight = std::numeric_limits<float>::infinity();
+  heightMap = std::vector<float>(rows * columns);
 }
 
 Terrain::~Terrain()
@@ -16,17 +24,27 @@ Terrain::~Terrain()
 void Terrain::draw()
 {
   glPushMatrix();
-  // render the terrain as parallel quad strips
-  glBegin(GL_QUAD_STRIP);
-  for (int i = 0; i <= glWidth; i++)
+  // center the terrain
+  glTranslatef(-rows / 2, 0, -columns / 2);
+
+  // render the terrain as a mesh of parallel quad strips
+  for (int i = 0; i < rows; i++)
   {
-    for (int j = 0; j <= glHeight; j++)
+    glBegin(GL_QUAD_STRIP);
+    for (int j = 0; j <= columns; j++)
     {
-      glVertex3f(i, heightMap[i * glHeight + j], j);
-      glVertex3f(i, heightMap[i * glHeight + j], j + 1);
+      // color the vertices based on the height
+      glColor3f(getHeight(i, j), 0.0f, 0.0f);
+      glVertex3f(i, getHeight(i, j), j);
+      glColor3f(getHeight(i, j + 1), 0.0f, 0.0f);
+      glVertex3f(i + 1, getHeight(i + 1, j), j);
     }
+    glEnd();
   }
-  glEnd();
+
+  // render the buffer contents
+  glDrawArrays(GL_QUAD_STRIP, 0, rows * columns);
+
   glPopMatrix();
 }
 
@@ -64,23 +82,27 @@ void Terrain::drawReferenceSystem()
 
 void Terrain::randomize()
 {
-  for (int i = 0; i < glWidth; i++)
+  std::vector<float> newHeightMap(rows * columns);
+  for (int i = 0; i < rows; i++)
   {
-    for (int j = 0; j < glHeight; j++)
+    for (int j = 0; j < columns; j++)
     {
-      heightMap[i * glHeight + j] = (rand() % 100) / 100.0;
+      newHeightMap[i * columns + j] = (rand() % 100) / 100.0;
     }
   }
+  setHeightMap(newHeightMap);
 }
 
 void Terrain::setHeight(int x, int y, float height)
 {
-  heightMap[x * glHeight + y] = height;
+  heightMap[x * columns + y] = height;
+  updateGLBuffer(x, y, height);
 }
 
 void Terrain::setHeightMap(std::vector<float> heightMap)
 {
   this->heightMap = heightMap;
+  updateGLBuffer();
 }
 
 std::vector<float> Terrain::getHeightMap()
@@ -90,5 +112,15 @@ std::vector<float> Terrain::getHeightMap()
 
 float Terrain::getHeight(int x, int y)
 {
-  return heightMap[x * glHeight + y];
+  return heightMap[x * columns + y];
+}
+
+void Terrain::updateGLBuffer()
+{
+  // glBufferData(GL_ARRAY_BUFFER, sizeof(float) * heightMap.size(), &heightMap[0], GL_STATIC_DRAW);
+}
+
+void Terrain::updateGLBuffer(int x, int y, float height)
+{
+  // glBufferSubData(GL_ARRAY_BUFFER, sizeof(float) * (x * columns + y), sizeof(float), &height);
 }
