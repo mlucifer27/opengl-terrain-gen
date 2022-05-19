@@ -1,12 +1,14 @@
 
 #include <stdlib.h>
 #include <stdio.h>
+#include <iostream>
+#include <math.h>
+
+#include "terrain.hpp"
 
 // macosx
 #ifdef __APPLE__
 #include <OpenGL/gl.h>
-#include <OpenGL/glu.h>
-#include <GLUT/glut.h>
 #else
 // windows-specific
 #ifdef _WIN32
@@ -14,45 +16,44 @@
 #endif
 // both linux and windows
 #include <GL/gl.h>
-#include <GL/glu.h>
-#include <GL/freeglut.h>
+#include <GLFW/glfw3.h>
 #endif
 
-#include <math.h>
+Terrain *terrain = new Terrain(256, 256, 256);
 
-/**
- * Draws a basic RGB reference system.
- */
-void DrawReferenceSystem()
+const char *GetGLErrorStr(GLenum err)
 {
-  // set the line width to 3.0
-  glLineWidth(3.0);
+  switch (err)
+  {
+  case GL_NO_ERROR:
+    return "No error";
+  case GL_INVALID_ENUM:
+    return "Invalid enum";
+  case GL_INVALID_VALUE:
+    return "Invalid value";
+  case GL_INVALID_OPERATION:
+    return "Invalid operation";
+  case GL_STACK_OVERFLOW:
+    return "Stack overflow";
+  case GL_STACK_UNDERFLOW:
+    return "Stack underflow";
+  case GL_OUT_OF_MEMORY:
+    return "Out of memory";
+  default:
+    return "Unknown error";
+  }
+}
 
-  // Draw three lines along the x, y, z axis to represent the reference system
-  // Use red for the x-axis, green for the y-axis and blue for the z-axis
-  glColor3f(1.0, 0.0, 0.0);
-  glBegin(GL_LINES);
-  glVertex3f(0.0, 0.0, 0.0);
-  glVertex3f(1.0, 0.0, 0.0);
-  glEnd();
+void CheckGLError()
+{
+  while (true)
+  {
+    const GLenum err = glGetError();
+    if (GL_NO_ERROR == err)
+      break;
 
-  glColor3f(0.0, 1.0, 0.0);
-  glBegin(GL_LINES);
-  glVertex3f(0.0, 0.0, 0.0);
-  glVertex3f(0.0, 1.0, 0.0);
-  glEnd();
-
-  glColor3f(0.0, 0.0, 1.0);
-  glBegin(GL_LINES);
-  glVertex3f(0.0, 0.0, 0.0);
-  glVertex3f(0.0, 0.0, 1.0);
-  glEnd();
-
-  // reset the drawing color to white
-  glColor3f(1.0, 1.0, 1.0);
-
-  // reset the line width to 1.0
-  glLineWidth(1.0);
+    std::cout << "GL Error: " << GetGLErrorStr(err) << std::endl;
+  }
 }
 
 /**
@@ -63,31 +64,31 @@ void initGL(void)
   glClearColor(0.0, 0.0, 0.0, 0.0);
   glMatrixMode(GL_PROJECTION);
   glLoadIdentity();
-  gluPerspective(65.0, 1.0, 1.0, 100.0);
+  // gluPerspective(65.0, 1.0, 1.0, 100.0);
 
   glShadeModel(GL_FLAT);
   glMatrixMode(GL_MODELVIEW);
   glLoadIdentity();
 
   // Place the camera
-  gluLookAt(-6, 5, -6, 0, 0, 2, 0, 1, 0);
+  // gluLookAt(-6, 5, -6, 0, 0, 2, 0, 1, 0);
 }
 
 /**
  * Display callback.
  */
-void display()
+void render()
 {
   // clear the screen with blue
   glClear(GL_COLOR_BUFFER_BIT);
 
   glPushMatrix();
 
-  DrawReferenceSystem();
+  // Draw the terrain
+  terrain->draw();
+  terrain->drawReferenceSystem();
 
   glPopMatrix();
-
-  glutSwapBuffers();
 }
 
 /**
@@ -103,35 +104,61 @@ void reshape(int width, int height)
     glViewport((width - height) / 2, 0, height, height);
 }
 
-int main(int argc, char **argv)
+/**
+ * Key input callback.
+ */
+void key_callback(GLFWwindow *window, int key, __attribute__((unused)) int scancode, __attribute__((unused)) int action, __attribute__((unused)) int mods)
 {
+  if (key == GLFW_KEY_ESCAPE && action == GLFW_PRESS)
+    glfwSetWindowShouldClose(window, GL_TRUE);
+}
 
-  // initialize glut
-  glutInit(&argc, argv);
+/**
+ * Error callback.
+ */
+void error_callback(__attribute__((unused)) int error, __attribute__((unused)) const char *description)
+{
+  fprintf(stderr, "GLFW Error: %s\n", description);
+}
 
-  // set the display mode
-  glutInitDisplayMode(GLUT_DOUBLE | GLUT_RGB);
+int main(__attribute__((unused)) int argc, __attribute__((unused)) char **argv)
+{
+  // Generate a random terrain
+  terrain->randomize(); // TODO: remove this
 
-  // set the window size
-  glutInitWindowSize(800, 800);
+  // Initialize GLFW
+  GLFWwindow *window;
+  if (!glfwInit())
+    return -1;
 
-  // set the window position
-  glutInitWindowPosition(100, 100);
+  window = glfwCreateWindow(800, 800, "Terrain interpolation demo", NULL, NULL);
+  if (!window)
+  {
+    glfwTerminate();
+    return -1;
+  }
 
-  // create the window
-  glutCreateWindow("Terrain interpolation demo");
-
-  // initialize the OpenGL graphics state
+  glfwMakeContextCurrent(window);
+  glfwSetKeyCallback(window, key_callback);
   initGL();
 
-  // set the display callback
-  glutDisplayFunc(display);
+  // Loop until the user closes the window
+  while (!glfwWindowShouldClose(window))
+  {
 
-  // set the reshape callback
-  glutReshapeFunc(reshape);
+    // Render
+    glClear(GL_COLOR_BUFFER_BIT);
 
-  // enter the event loop
-  glutMainLoop();
+    render();
+
+    /* Swap front and back buffers */
+    glfwSwapBuffers(window);
+
+    /* Poll for and process events */
+    glfwPollEvents();
+  }
+
+  glfwTerminate();
 
   return EXIT_SUCCESS;
 }
