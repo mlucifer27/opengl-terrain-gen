@@ -1,34 +1,42 @@
+#include "mesh.hpp"
+#include "drawable.hpp"
+#include "GL/gl.h"
+
 #include <iostream>
 #include <cmath>
 #include <vector>
-#include "GL/gl.h"
-#include "mesh.hpp"
 
 #ifndef TERRAIN_HPP
 #define TERRAIN_HPP
 
-class Terrain
+class Terrain : public Drawable
 {
 private:
+  /* The number of rows in the terrain. */
   int rows;
+  /* The number of columns in the heightmap. */
   int columns;
+  /* maximum height of the terrain */
   float maxHeight;
+  /* minimum height of the terrain */
   float minHeight;
-  GLuint vertex_buffer;
+  /* The heightmap (backlog states it can be exported). */
   std::vector<float> heightMap;
-  std::vector<vertex> vertices;
+  /* The mesh associated with the terrain. */
+  Mesh mesh;
   /**
-   * Updates the entire vertex OpenGL buffer (pretty heavy).
-   * @see updateGLBuffer(int, int)
+   * Updates the vertices and primitives of the mesh.
    */
-  void updateGLBuffer();
-  /**
-   * Updates a single vertex in the vertex OpenGL buffer (preferable when modifying few vertices).
-   */
-  void updateGLBuffer(int x, int y, float height);
+  void updateMesh();
 
 public:
+  /**
+   * Creates a terrain with the given number of rows and columns.
+   */
   Terrain(int rows, int columns);
+  /**
+   * Destroys the terrain (I really wanted to call that one Bulldoze(), but conventions).
+   */
   ~Terrain();
   /**
    * Randomize the terrain height.
@@ -38,10 +46,6 @@ public:
    * Draw the terrain.
    */
   void draw();
-  /**
-   * Draws a basic RGB reference system.
-   */
-  void drawReferenceSystem();
   /**
    * Set the height of a specific point.
    */

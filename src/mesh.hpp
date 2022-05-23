@@ -1,5 +1,6 @@
 #include <vector>
 #include "GL/gl.h"
+#include "drawable.hpp"
 
 #ifndef MESH_HPP
 #define MESH_HPP
@@ -14,33 +15,17 @@ struct vertex
 };
 
 /**
- * A primitive is either a triangle or a quad.
+ * A primitive can only be a triangle for now.
  */
 struct primitive
 {
-  int type;
-};
-
-/**
- * A triangle is a primitive composed of 3 vertices.
- */
-struct triangle : public primitive
-{
-  int v1, v2, v3;
-};
-
-/**
- * A quad is a primitive composed of 4 vertices.
- */
-struct quad : public primitive
-{
-  int v1, v2, v3, v4;
+  int a, b, c;
 };
 
 /**
  * A mesh is a collection of vertices and primitives.
  */
-class Mesh
+class Mesh : public Drawable
 {
 private:
   /* The buffer containing the vertices. */
@@ -56,9 +41,17 @@ private:
 
 public:
   /**
+   * Creates an empty mesh.
+   */
+  Mesh();
+  /**
    * Create a mesh with the given number of vertices and primitives.
    */
   Mesh(int vertices, int primitives);
+  /**
+   * Creates a mesh from the given vertices and primitives.
+   */
+  Mesh(std::vector<vertex> vertices, std::vector<primitive> primitives);
   /**
    * Destroy the mesh.
    */
@@ -67,6 +60,14 @@ public:
    * Draw the mesh.
    */
   void draw();
+  /**
+   * Set the vertices of the mesh.
+   */
+  void setVertices(std::vector<vertex> vertices);
+  /**
+   * Set the primitives of the mesh.
+   */
+  void setPrimitives(std::vector<primitive> primitives);
   /**
    * Set the position of a vertex.
    */

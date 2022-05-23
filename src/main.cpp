@@ -1,12 +1,12 @@
 #define GL_GLEXT_PROTOTYPES 1
 #define GL3_PROTOTYPES 1
 
+#include "terrain.hpp"
+
 #include <stdlib.h>
 #include <stdio.h>
 #include <iostream>
 #include <math.h>
-
-#include "terrain.hpp"
 
 // macosx
 #ifdef __APPLE__
