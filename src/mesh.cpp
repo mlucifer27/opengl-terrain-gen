@@ -6,6 +6,7 @@
 #include <GL/gl.h>
 #include <GL/glu.h>
 #include <GLFW/glfw3.h>
+#include <tuple>
 
 Mesh::Mesh()
 {
@@ -98,4 +99,10 @@ void Mesh::setPrimitive(int index, primitive p)
 void Mesh::setWireframe(bool wireframe)
 {
   this->wireframe = wireframe;
+}
+
+void Mesh::subdivide(std::tuple<std::vector<vertex>, std::vector<primitive>> (*algorithm)(std::vector<vertex> vertices, std::vector<primitive> primitives))
+{
+  std::tie(vertices, primitives) = algorithm(vertices, primitives);
+  updateGLBuffers();
 }

@@ -12,13 +12,15 @@
 class Terrain : public Drawable
 {
 private:
+  /* Level of detail of the terrain (defaults to zero, ie. lowest). */
+  int subdivisions = 0;
   /* The number of rows in the terrain. */
   int rows;
   /* The number of columns in the heightmap. */
   int columns;
-  /* maximum height of the terrain */
+  /* maximum height of the terrain. */
   float maxHeight;
-  /* minimum height of the terrain */
+  /* minimum height of the terrain. */
   float minHeight;
   /* The heightmap (backlog states it can be exported). */
   std::vector<float> heightMap;
@@ -62,11 +64,18 @@ public:
    * Get the heightmap.
    */
   std::vector<float> getHeightMap();
-
   /**
    * Print the heightmap.
    */
   void printHeightMap(char *message);
+  /**
+   * Set the level of detail of the terrain (0 = lowest).
+   */
+  void setSubdivisions(int subdivisions);
+  /**
+   * Get the level of detail of the terrain.
+   */
+  int getSubdivisions();
 };
 
 #endif

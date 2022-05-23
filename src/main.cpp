@@ -91,6 +91,10 @@ void key_callback(GLFWwindow *window, int key, __attribute__((unused)) int scanc
       camSpeedX = -1;
     if (key == GLFW_KEY_R)
       terrain->randomize();
+    if (key == GLFW_KEY_KP_ADD)
+      terrain->setSubdivisions(terrain->getSubdivisions() + 1);
+    if (key == GLFW_KEY_KP_SUBTRACT)
+      terrain->setSubdivisions(terrain->getSubdivisions() - 1);
   }
   else if (action == GLFW_RELEASE)
   {
@@ -164,7 +168,7 @@ int main(__attribute__((unused)) int argc, __attribute__((unused)) char **argv)
   initGL();
 
   // Generate a random terrain (must be run after initGL)
-  terrain = new Terrain(100, 100);
+  terrain = new Terrain(10, 10);
   terrain->randomize();
 
   // Loop until the user closes the window

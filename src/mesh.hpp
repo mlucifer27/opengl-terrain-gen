@@ -1,9 +1,9 @@
+#ifndef MESH_HPP
+#define MESH_HPP
+
 #include <vector>
 #include "GL/gl.h"
 #include "drawable.hpp"
-
-#ifndef MESH_HPP
-#define MESH_HPP
 
 /**
  * A vertex is a point in 3D space.
@@ -12,14 +12,20 @@ struct vertex
 {
   float x, y, z;
   float r, g, b, a;
+  vertex() : x(0.0f), y(0.0f), z(0.0f), r(1.0f), g(1.0f), b(1.0f), a(1.0f) {}
+  vertex(float x, float y, float z) : x(x), y(y), z(z), r(1.0f), g(1.0f), b(1.0f), a(1.0f) {}
+  vertex(float x, float y, float z, float r, float g, float b, float a) : x(x), y(y), z(z), r(r), g(g), b(b), a(a) {}
 };
 
 /**
- * A primitive can only be a triangle for now.
+ * A primitive is a set of linked vertices forming a face or a set of faces.
+ * It can only contain three vertices for now (triangle primitive).
  */
 struct primitive
 {
   int a, b, c;
+  primitive() : a(-1), b(-1), c(-1) {}
+  primitive(int a, int b, int c) : a(a), b(b), c(c) {}
 };
 
 /**
@@ -82,6 +88,10 @@ public:
    * Switch polygon mode (wireframe or fill).
    */
   void setWireframe(bool wireframe);
+  /**
+   * Subdivide the mesh.
+   */
+  void subdivide(std::tuple<std::vector<vertex>, std::vector<primitive>> (*algorithm)(std::vector<vertex> vertices, std::vector<primitive> primitives));
 };
 
 #endif // MESH_HPP

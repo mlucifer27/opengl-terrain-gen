@@ -5,6 +5,9 @@
 #include <GL/glu.h>
 #include <GLFW/glfw3.h>
 
+/**
+ * @brief A drawable object.
+ */
 class Drawable
 {
 public:

@@ -2,6 +2,7 @@
 #define GL3_PROTOTYPES 1
 
 #include "terrain.hpp"
+#include "algorithms.hpp"
 
 #include <limits>
 #include <GL/gl.h>
@@ -34,8 +35,9 @@ void Terrain::updateMesh()
 {
   vertex vertices[rows * columns];
   primitive primitives[(rows - 1) * (columns - 1) * 2];
-  float originX = -(rows / 2.0f) * 1.0f;
-  float originY = -(columns / 2.0f) * 1.0f;
+  // Shift the heightmap to the center of the mesh
+  float originX = -((rows - 1) / 2.0f) * 1.0f;
+  float originY = -((columns - 1) / 2.0f) * 1.0f;
   // For each row
   for (int i = 0; i < rows; i++)
   {
@@ -43,15 +45,7 @@ void Terrain::updateMesh()
     for (int j = 0; j < columns; j++)
     {
       float height = heightMap[i * columns + j];
-      vertices[i * columns + j] = vertex();
-      vertices[i * columns + j].x = j + originX;
-      vertices[i * columns + j].y = height;
-      vertices[i * columns + j].z = i + originY;
-      // Set color according to height
-      vertices[i * columns + j].r = 0.5f;
-      vertices[i * columns + j].g = 0.2f;
-      vertices[i * columns + j].b = 0.2f;
-      vertices[i * columns + j].a = 1.f;
+      vertices[i * columns + j] = vertex(j + originX, height, i + originY, 0.5f, 0.2f, 0.2f, 1.0f);
 
       // Update the max and min height
       if (height > maxHeight)
@@ -67,20 +61,19 @@ void Terrain::updateMesh()
       if (j < columns - 1 && i < rows - 1)
       {
         // Create the two triangles
-        primitives[(i * (columns - 1) + j) * 2] = primitive();
-        primitives[(i * (columns - 1) + j) * 2].a = i * columns + j;
-        primitives[(i * (columns - 1) + j) * 2].b = i * columns + j + 1;
-        primitives[(i * (columns - 1) + j) * 2].c = (i + 1) * columns + j + 1;
-        primitives[(i * (columns - 1) + j) * 2 + 1] = primitive();
-        primitives[(i * (columns - 1) + j) * 2 + 1].a = i * columns + j;
-        primitives[(i * (columns - 1) + j) * 2 + 1].b = (i + 1) * columns + j + 1;
-        primitives[(i * (columns - 1) + j) * 2 + 1].c = (i + 1) * columns + j;
+        primitives[(i * (columns - 1) + j) * 2] = primitive(i * columns + j, i * columns + j + 1, (i + 1) * columns + j + 1);
+        primitives[(i * (columns - 1) + j) * 2 + 1] = primitive(i * columns + j, (i + 1) * columns + j + 1, (i + 1) * columns + j);
       }
     }
   }
   // Set the vertices and primitives
   mesh.setVertices(std::vector<vertex>(vertices, vertices + rows * columns));
   mesh.setPrimitives(std::vector<primitive>(primitives, primitives + (rows - 1) * (columns - 1) * 2));
+  // Apply subdivision
+  for (int i = 0; i < subdivisions; i++)
+  {
+    mesh.subdivide(&loop);
+  }
 }
 
 void Terrain::draw()
@@ -105,8 +98,6 @@ void Terrain::randomize()
     }
   }
   setHeightMap(newHeightMap);
-  // Print the new heightmap (debug)
-  printHeightMap("New heightmap (generated):");
   // Update the mesh
   updateMesh();
 }
@@ -147,4 +138,21 @@ void Terrain::printHeightMap(char *message = "Heightmap: ")
     }
     std::cout << std::endl;
   }
+}
+
+void Terrain::setSubdivisions(int subdivisions)
+{
+  if (subdivisions >= 0)
+  {
+    this->subdivisions = subdivisions;
+    // print the new number of subdivisions (for debugging)
+    std::cout << "Subdivisions: " << subdivisions << std::endl;
+    // Update the mesh
+    updateMesh();
+  }
+}
+
+int Terrain::getSubdivisions()
+{
+  return subdivisions;
 }
