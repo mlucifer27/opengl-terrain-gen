@@ -1,6 +1,8 @@
 #include <iostream>
 #include <cmath>
 #include <vector>
+#include "GL/gl.h"
+#include "mesh.hpp"
 
 #ifndef TERRAIN_HPP
 #define TERRAIN_HPP
@@ -12,7 +14,9 @@ private:
   int columns;
   float maxHeight;
   float minHeight;
+  GLuint vertex_buffer;
   std::vector<float> heightMap;
+  std::vector<vertex> vertices;
   /**
    * Updates the entire vertex OpenGL buffer (pretty heavy).
    * @see updateGLBuffer(int, int)

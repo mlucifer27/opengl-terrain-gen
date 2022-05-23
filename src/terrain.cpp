@@ -1,10 +1,12 @@
+#define GL_GLEXT_PROTOTYPES 1
+#define GL3_PROTOTYPES 1
+
 #include "terrain.hpp"
-#include <GLFW/glfw3.h>
+
 #include <limits>
 #include <GL/gl.h>
 #include <GL/glu.h>
-#define GL_GLEXT_PROTOTYPES
-#define GLFW_INCLUDE_NONE
+#include <GLFW/glfw3.h>
 
 Terrain::Terrain(int rows, int columns)
 {
@@ -15,6 +17,18 @@ Terrain::Terrain(int rows, int columns)
   // minHeight is positive infinity
   this->minHeight = std::numeric_limits<float>::infinity();
   heightMap = std::vector<float>(rows * columns);
+  vertices = std::vector<vertex>(rows * columns);
+  // initialize vertices x and z components
+  for (int i = 0; i < rows; i++)
+  {
+    for (int j = 0; j < columns; j++)
+    {
+      vertices[i * columns + j].x = i;
+      vertices[i * columns + j].z = j;
+    }
+  }
+  // Create vertex buffer
+  glGenBuffers(1, &vertex_buffer);
 }
 
 Terrain::~Terrain()
@@ -34,16 +48,16 @@ void Terrain::draw()
     for (int j = 0; j <= columns; j++)
     {
       // color the vertices based on the height
-      glColor3f(getHeight(i, j), 0.0f, 0.0f);
+      glColor3f(getHeight(i, j), 0.0f, 0.0f); // TODO: replace this with a proper coloring system
       glVertex3f(i, getHeight(i, j), j);
       glColor3f(getHeight(i, j + 1), 0.0f, 0.0f);
-      glVertex3f(i + 1, getHeight(i + 1, j), j);
+      glVertex3f(i + 1, getHeight(i + 1, j), j); // TODO : replace this
     }
     glEnd();
   }
 
   // render the buffer contents
-  glDrawArrays(GL_QUAD_STRIP, 0, rows * columns);
+  glDrawArrays(GL_QUAD_STRIP, 0, vertices.size());
 
   glPopMatrix();
 }
@@ -96,12 +110,23 @@ void Terrain::randomize()
 void Terrain::setHeight(int x, int y, float height)
 {
   heightMap[x * columns + y] = height;
+  // update vertex
+  vertices[x * columns + y].y = height;
   updateGLBuffer(x, y, height);
 }
 
 void Terrain::setHeightMap(std::vector<float> heightMap)
 {
   this->heightMap = heightMap;
+  // update vertices
+  for (int i = 0; i < rows; i++)
+  {
+    for (int j = 0; j < columns; j++)
+    {
+      vertices[i * columns + j].y = heightMap[i * columns + j];
+    }
+  }
+  // update the buffer
   updateGLBuffer();
 }
 
@@ -117,10 +142,12 @@ float Terrain::getHeight(int x, int y)
 
 void Terrain::updateGLBuffer()
 {
-  // glBufferData(GL_ARRAY_BUFFER, sizeof(float) * heightMap.size(), &heightMap[0], GL_STATIC_DRAW);
+  glBindBuffer(GL_ARRAY_BUFFER, vertex_buffer);
+  glBufferData(GL_ARRAY_BUFFER, sizeof(vertex) * vertices.size(), &vertices[0], GL_STATIC_DRAW);
 }
 
 void Terrain::updateGLBuffer(int x, int y, float height)
 {
-  // glBufferSubData(GL_ARRAY_BUFFER, sizeof(float) * (x * columns + y), sizeof(float), &height);
+  glBindBuffer(GL_ARRAY_BUFFER, vertex_buffer);
+  glBufferSubData(GL_ARRAY_BUFFER, sizeof(vertex) * (x * columns + y), sizeof(vertex), &vertices[x * columns + y]);
 }
