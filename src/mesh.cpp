@@ -45,6 +45,8 @@ void Mesh::updateGLBuffers()
 
 void Mesh::draw()
 {
+  if (this->wireframe)
+    glPolygonMode(GL_FRONT_AND_BACK, GL_LINE); // activate wireframe mode
   glPushMatrix();
   {
     // Bind the vertex buffer
@@ -54,7 +56,8 @@ void Mesh::draw()
     glEnableVertexAttribArray(1);
     // Set the vertex attribute pointers
     glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, sizeof(vertex), (void *)0);
-    glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, sizeof(vertex), (void *)12);
+    glVertexAttribPointer(1, 4, GL_FLOAT, GL_FALSE, sizeof(vertex), (void *)12); // vertex color doesn't work atm
+
     // Bind the primitive buffer
     glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, primitive_buffer);
     // Draw the primitives
@@ -64,6 +67,8 @@ void Mesh::draw()
     glDisableVertexAttribArray(1);
   }
   glPopMatrix();
+  if (this->wireframe)
+    glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
 }
 
 void Mesh::setVertices(std::vector<vertex> vertices)
@@ -88,4 +93,9 @@ void Mesh::setPrimitive(int index, primitive p)
 {
   primitives[index] = p;
   updateGLBuffers();
+}
+
+void Mesh::setWireframe(bool wireframe)
+{
+  this->wireframe = wireframe;
 }

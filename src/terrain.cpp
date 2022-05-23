@@ -20,6 +20,8 @@ Terrain::Terrain(int rows, int columns)
   this->heightMap = std::vector<float>(rows * columns);
   // Create the mesh (the primitives are triangles)
   this->mesh = Mesh(rows * columns, (rows - 1) * (columns - 1) * 2);
+  // Temporary: set rendering mode to wireframe
+  mesh.setWireframe(true);
   // Update the mesh
   updateMesh();
 }
@@ -32,28 +34,37 @@ void Terrain::updateMesh()
 {
   vertex vertices[rows * columns];
   primitive primitives[(rows - 1) * (columns - 1) * 2];
+  float originX = -(rows / 2.0f) * 1.0f;
+  float originY = -(columns / 2.0f) * 1.0f;
   // For each row
   for (int i = 0; i < rows; i++)
   {
     // For each column
     for (int j = 0; j < columns; j++)
     {
+      float height = heightMap[i * columns + j];
       vertices[i * columns + j] = vertex();
-      vertices[i * columns + j].x = j;
-      vertices[i * columns + j].y = heightMap[i * columns + j];
-      vertices[i * columns + j].z = i;
+      vertices[i * columns + j].x = j + originX;
+      vertices[i * columns + j].y = height;
+      vertices[i * columns + j].z = i + originY;
+      // Set color according to height
+      vertices[i * columns + j].r = 0.5f;
+      vertices[i * columns + j].g = 0.2f;
+      vertices[i * columns + j].b = 0.2f;
+      vertices[i * columns + j].a = 1.f;
+
       // Update the max and min height
-      if (heightMap[i * columns + j] > maxHeight)
+      if (height > maxHeight)
       {
-        maxHeight = heightMap[i * columns + j];
+        maxHeight = height;
       }
-      if (heightMap[i * columns + j] < minHeight)
+      if (height < minHeight)
       {
-        minHeight = heightMap[i * columns + j];
+        minHeight = height;
       }
 
       // if the current vertex is not the last one
-      if (j < columns - 1)
+      if (j < columns - 1 && i < rows - 1)
       {
         // Create the two triangles
         primitives[(i * (columns - 1) + j) * 2] = primitive();
@@ -76,9 +87,6 @@ void Terrain::draw()
 {
   glPushMatrix();
 
-  // center the terrain
-  glTranslatef(-rows / 2, 0, -columns / 2);
-
   // Draw the mesh
   mesh.draw();
 
@@ -97,6 +105,8 @@ void Terrain::randomize()
     }
   }
   setHeightMap(newHeightMap);
+  // Print the new heightmap (debug)
+  printHeightMap("New heightmap (generated):");
   // Update the mesh
   updateMesh();
 }
@@ -107,6 +117,11 @@ void Terrain::setHeight(int x, int y, float height)
   heightMap[y * columns + x] = height;
   // Update the mesh
   updateMesh();
+}
+
+float Terrain::getHeight(int x, int y)
+{
+  return heightMap[x * columns + y];
 }
 
 void Terrain::setHeightMap(std::vector<float> heightMap)
@@ -121,7 +136,15 @@ std::vector<float> Terrain::getHeightMap()
   return heightMap;
 }
 
-float Terrain::getHeight(int x, int y)
+void Terrain::printHeightMap(char *message = "Heightmap: ")
 {
-  return heightMap[x * columns + y];
+  std::cout << message << std::endl;
+  for (int i = 0; i < rows; i++)
+  {
+    for (int j = 0; j < columns; j++)
+    {
+      std::cout << this->heightMap[i * columns + j] << ", ";
+    }
+    std::cout << std::endl;
+  }
 }

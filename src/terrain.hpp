@@ -62,6 +62,11 @@ public:
    * Get the heightmap.
    */
   std::vector<float> getHeightMap();
+
+  /**
+   * Print the heightmap.
+   */
+  void printHeightMap(char *message);
 };
 
 #endif

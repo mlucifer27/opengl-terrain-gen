@@ -11,7 +11,7 @@
 struct vertex
 {
   float x, y, z;
-  float r, g, b;
+  float r, g, b, a;
 };
 
 /**
@@ -28,6 +28,8 @@ struct primitive
 class Mesh : public Drawable
 {
 private:
+  /* Polygon mode set to wireframe or fill */
+  bool wireframe = false;
   /* The buffer containing the vertices. */
   GLuint vertex_buffer;
   /* The buffer containing the primitives. */
@@ -76,6 +78,10 @@ public:
    * Set the position of a primitive.
    */
   void setPrimitive(int index, primitive p);
+  /**
+   * Switch polygon mode (wireframe or fill).
+   */
+  void setWireframe(bool wireframe);
 };
 
 #endif // MESH_HPP

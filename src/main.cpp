@@ -27,29 +27,17 @@ float camAngleY = 0.0f;
 float camSpeedX = 0.0f;
 float camSpeedY = 0.0f;
 float camDistance = 10.0f;
-float camDistanceSpeed = 0.0f;
+float camDistanceFactor = 1.0f;
 
-/**
- * Initializes the OpenGL context.
- */
-void initGL()
-{
-  glClearColor(0.15f, 0.15f, 0.15f, 1.0f);
-  glMatrixMode(GL_PROJECTION);
-  glLoadIdentity();
-  gluPerspective(65.0, 1.0, 0.1, 1000.0);
+int windowSize[2] = {800, 800};
+float nearPlane = 0.1f;
+float farPlane = 1000.0f;
 
-  glShadeModel(GL_FLAT);
-  glMatrixMode(GL_MODELVIEW);
-  glLoadIdentity();
-
-  // Place the camera
-  gluLookAt(-6, 5, -6, 0, 0, 2, 0, 1, 0);
-}
+Terrain *terrain;
 
 void placeCamera()
 {
-  camDistance += camDistanceSpeed;
+  camDistance *= camDistanceFactor;
   camAngleX += camSpeedX;
   camAngleY += camSpeedY;
   glTranslatef(0.f, 0.f, -camDistance);
@@ -60,7 +48,7 @@ void placeCamera()
 /**
  * Display callback.
  */
-void render(Terrain *terrain)
+void render()
 {
   // clear the screen with blue
   glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
@@ -90,9 +78,9 @@ void key_callback(GLFWwindow *window, int key, __attribute__((unused)) int scanc
     if (key == GLFW_KEY_ESCAPE)
       glfwSetWindowShouldClose(window, GL_TRUE);
     if (key == GLFW_KEY_W)
-      camDistanceSpeed = -0.1;
+      camDistanceFactor = 0.98f;
     if (key == GLFW_KEY_S)
-      camDistanceSpeed = 0.1;
+      camDistanceFactor = 1.02f;
     if (key == GLFW_KEY_LEFT)
       camSpeedY = 1;
     if (key == GLFW_KEY_RIGHT)
@@ -101,11 +89,13 @@ void key_callback(GLFWwindow *window, int key, __attribute__((unused)) int scanc
       camSpeedX = 1;
     if (key == GLFW_KEY_DOWN)
       camSpeedX = -1;
+    if (key == GLFW_KEY_R)
+      terrain->randomize();
   }
   else if (action == GLFW_RELEASE)
   {
     if (key == GLFW_KEY_W || key == GLFW_KEY_S)
-      camDistanceSpeed = 0;
+      camDistanceFactor = 1.0f;
     if (key == GLFW_KEY_LEFT || key == GLFW_KEY_RIGHT)
       camSpeedY = 0;
     if (key == GLFW_KEY_UP || key == GLFW_KEY_DOWN)
@@ -126,8 +116,27 @@ void resize_callback(GLFWwindow *window, int width, int height)
   glViewport(0, 0, width, height);
   glMatrixMode(GL_PROJECTION);
   glLoadIdentity();
-  gluPerspective(65.0, (float)width / (float)height, 1.0, 100.0);
+  gluPerspective(65.0, (float)width / (float)height, nearPlane, farPlane);
   glMatrixMode(GL_MODELVIEW);
+}
+
+/**
+ * Initializes the OpenGL context.
+ */
+void initGL()
+{
+  // Define the clear color
+  glClearColor(0.15f, 0.15f, 0.15f, 1.0f);
+  glViewport(0, 0, windowSize[0], windowSize[1]);
+  glMatrixMode(GL_PROJECTION);
+  glLoadIdentity();
+  gluPerspective(65.0, (float)windowSize[0] / (float)windowSize[1], nearPlane, farPlane);
+  glShadeModel(GL_FLAT);
+  glMatrixMode(GL_MODELVIEW);
+  glLoadIdentity();
+
+  // Place the camera
+  gluLookAt(-6, 5, -6, 0, 0, 2, 0, 1, 0);
 }
 
 int main(__attribute__((unused)) int argc, __attribute__((unused)) char **argv)
@@ -140,7 +149,7 @@ int main(__attribute__((unused)) int argc, __attribute__((unused)) char **argv)
   if (!glfwInit())
     return -1;
 
-  window = glfwCreateWindow(800, 800, "Terrain interpolation demo", NULL, NULL);
+  window = glfwCreateWindow(windowSize[0], windowSize[1], "Terrain interpolation demo", NULL, NULL);
   if (!window)
   {
     glfwTerminate();
@@ -152,9 +161,10 @@ int main(__attribute__((unused)) int argc, __attribute__((unused)) char **argv)
   glfwSetInputMode(window, GLFW_STICKY_MOUSE_BUTTONS, GLFW_TRUE);
   glfwSetErrorCallback(error_callback);
   glfwSetWindowSizeCallback(window, resize_callback);
+  initGL();
 
   // Generate a random terrain (must be run after initGL)
-  Terrain *terrain = new Terrain(4, 4);
+  terrain = new Terrain(100, 100);
   terrain->randomize();
 
   // Loop until the user closes the window
@@ -164,7 +174,7 @@ int main(__attribute__((unused)) int argc, __attribute__((unused)) char **argv)
     // Render
     glClear(GL_COLOR_BUFFER_BIT);
 
-    render(terrain);
+    render();
 
     /* Swap front and back buffers */
     glfwSwapBuffers(window);
