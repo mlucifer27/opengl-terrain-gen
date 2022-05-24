@@ -43,92 +43,49 @@ std::tuple<std::vector<vertex>, std::vector<primitive>> wave(std::vector<vertex>
 
   return std::make_tuple(new_vertices, new_primitives);
 }
-
 std::tuple<std::vector<vertex>, std::vector<primitive>> loop(std::vector<vertex> vertices, std::vector<primitive> primitives)
 {
   // Create the new vertices (initialize with the original vertices)
-  std::vector<vertex> new_vertices = vertices;
+  std::vector<vertex> new_vertices;
   // Create the new primitives (initialize with the original primitives)
-  std::vector<primitive> new_primitives = primitives;
-  // Create map of edges
-  std::vector<edge> edges;
+  std::vector<primitive> new_primitives;
 
-  /*
+  return std::make_tuple(new_vertices, new_primitives);
+}
+
+std::tuple<std::vector<vertex>, std::vector<primitive>> simpleSubd(std::vector<vertex> vertices, std::vector<primitive> primitives)
+{
+  // Create the new vertices (initialize with the original vertices)
+  std::vector<vertex> new_vertices;
+  // Create the new primitives (initialize with the original primitives)
+  std::vector<primitive> new_primitives;
 
   // For each primitive
   for (int i = 0; i < (int)primitives.size(); i++)
   {
-    // Add the edges to the edge list if they are not already in the list
-    if (std::find(edges.begin(), edges.end(), edge(primitives[i].a, primitives[i].b)) == edges.end())
-      edges.push_back(edge(primitives[i].a, primitives[i].b));
-    if (std::find(edges.begin(), edges.end(), edge(primitives[i].b, primitives[i].c)) == edges.end())
-      edges.push_back(edge(primitives[i].b, primitives[i].c));
-    if (std::find(edges.begin(), edges.end(), edge(primitives[i].c, primitives[i].a)) == edges.end())
-      edges.push_back(edge(primitives[i].c, primitives[i].a));
+    // Get the primitive's vertices
+    vertex v1 = vertices[primitives[i].a];
+    vertex v2 = vertices[primitives[i].b];
+    vertex v3 = vertices[primitives[i].c];
+
+    vertex v4 = vertex((v1.x + v2.x) / 2, (v1.y + v2.y) / 2, (v1.z + v2.z) / 2);
+    vertex v5 = vertex((v2.x + v3.x) / 2, (v2.y + v3.y) / 2, (v2.z + v3.z) / 2);
+    vertex v6 = vertex((v1.x + v3.x) / 2, (v1.y + v3.y) / 2, (v1.z + v3.z) / 2);
+
+    new_vertices.push_back(v1);
+    new_vertices.push_back(v2);
+    new_vertices.push_back(v3);
+    new_vertices.push_back(v4);
+    new_vertices.push_back(v5);
+    new_vertices.push_back(v6);
+
+    int index = new_vertices.size() - 6;
+    // Create the new primitive
+    new_primitives.push_back(primitive(index, index + 3, index + 5));
+    new_primitives.push_back(primitive(index + 3, index + 4, index + 5));
+    new_primitives.push_back(primitive(index + 3, index + 1, index + 4));
+    new_primitives.push_back(primitive(index + 4, index + 2, index + 5));
   }
-
-
-  // For each vertex
-  for (int i = 0; i < (int)vertices.size(); i++)
-  {
-    vertex v = vertices[i];
-    // Find all the edges that contain the current vertex
-    std::vector<int> vertex_edge_indices;
-    for (int j = 0; j < (int)edges.size(); j++)
-    {
-      if (edges[j].v1 == i || edges[j].v2 == i)
-        vertex_edge_indices.push_back(j);
-    }
-
-    // For each edge
-    for (int current_edge : vertex_edge_indices)
-    {
-      if (edges[current_edge].e != -1) // If the edge has already been subdivided
-        break;
-
-      // Find the other vertex of the current edge
-      vertex vi;
-      if (edges[current_edge].v1 != i)
-        vi = vertices[edges[current_edge].v1];
-      else
-        vi = vertices[edges[current_edge].v2];
-
-      // Find the primitives that contains both the current vertex and vi
-      std::vector<primitive> primitives_vi;
-      for (int k = 0; k < (int)primitives.size(); k++)
-      {
-        if (primitives[k].a == i && primitives[k].b == edges[current_edge].v1)
-          primitives_vi.push_back(primitives[k]);
-        if (primitives[k].b == i && primitives[k].c == edges[current_edge].v1)
-          primitives_vi.push_back(primitives[k]);
-        if (primitives[k].c == i && primitives[k].a == edges[current_edge].v1)
-          primitives_vi.push_back(primitives[k]);
-      }
-
-      vertex e = vertex(3.0 / 8.0 * (v.x + vi.x), 3.0 / 8.0 * (v.y + vi.y), 3.0 / 8.0 * (v.z + vi.z));
-
-      // For each primitive
-      for (int l = 0; l < (int)primitives_vi.size(); l++)
-      {
-        int third_vertex; // vertex that is not the current vertex and not vi
-        if (primitives_vi[l].a != i && primitives_vi[l].a != edges[current_edge].v1)
-          third_vertex = primitives_vi[l].a;
-        else if (primitives_vi[l].b != i && primitives_vi[l].b != edges[current_edge].v1)
-          third_vertex = primitives_vi[l].b;
-        else
-          third_vertex = primitives_vi[l].c;
-
-        e.x = e.x + 1.0 / 8.0 * (vertices[third_vertex].x);
-        e.y = e.y + 1.0 / 8.0 * (vertices[third_vertex].y);
-        e.z = e.z + 1.0 / 8.0 * (vertices[third_vertex].z);
-      }
-
-      // Store the new vertex
-      new_vertices.push_back(e);
-      edges[current_edge].e = new_vertices.size() - 1;
-    }
-  }
-  */
 
   return std::make_tuple(new_vertices, new_primitives);
 }

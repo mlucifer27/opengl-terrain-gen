@@ -72,7 +72,7 @@ void Terrain::updateMesh()
   // Apply subdivision
   for (int i = 0; i < subdivisions; i++)
   {
-    mesh.subdivide(&wave);
+    mesh.subdivide(&simpleSubd);
   }
 }
 
