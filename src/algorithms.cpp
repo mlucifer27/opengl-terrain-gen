@@ -3,6 +3,7 @@
 #include <list>
 #include <algorithm>
 #include <map>
+#include <math.h>
 
 struct edge
 {
@@ -19,10 +20,27 @@ struct edge
 std::tuple<std::vector<vertex>, std::vector<primitive>> catmullClark(std::vector<vertex> vertices, std::vector<primitive> primitives)
 {
   // Create the new vertices
-  std::vector<vertex> new_vertices;
+  std::vector<vertex> new_vertices = vertices;
   // Create the new primitives
-  std::vector<primitive> new_primitives;
+  std::vector<primitive> new_primitives = primitives;
   // TODO: Implement the Catmull-Clark algorithm
+  return std::make_tuple(new_vertices, new_primitives);
+}
+
+std::tuple<std::vector<vertex>, std::vector<primitive>> wave(std::vector<vertex> vertices, std::vector<primitive> primitives)
+{
+  // Create the new vertices
+  std::vector<vertex> new_vertices = vertices;
+  // Create the new primitives
+  std::vector<primitive> new_primitives = primitives;
+
+  // For each vertex
+  for (int i = 0; i < vertices.size(); i++)
+  {
+    // Apply a sine wave to the vertex's position
+    new_vertices[i].y += sin(vertices[i].x * vertices[i].z) * 0.1f;
+  }
+
   return std::make_tuple(new_vertices, new_primitives);
 }
 
@@ -35,8 +53,10 @@ std::tuple<std::vector<vertex>, std::vector<primitive>> loop(std::vector<vertex>
   // Create map of edges
   std::vector<edge> edges;
 
+  /*
+
   // For each primitive
-  for (int i = 0; i < primitives.size(); i++)
+  for (int i = 0; i < (int)primitives.size(); i++)
   {
     // Add the edges to the edge list if they are not already in the list
     if (std::find(edges.begin(), edges.end(), edge(primitives[i].a, primitives[i].b)) == edges.end())
@@ -47,13 +67,14 @@ std::tuple<std::vector<vertex>, std::vector<primitive>> loop(std::vector<vertex>
       edges.push_back(edge(primitives[i].c, primitives[i].a));
   }
 
+
   // For each vertex
-  for (int i = 0; i < vertices.size(); i++)
+  for (int i = 0; i < (int)vertices.size(); i++)
   {
     vertex v = vertices[i];
     // Find all the edges that contain the current vertex
     std::vector<int> vertex_edge_indices;
-    for (int j = 0; j < edges.size(); j++)
+    for (int j = 0; j < (int)edges.size(); j++)
     {
       if (edges[j].v1 == i || edges[j].v2 == i)
         vertex_edge_indices.push_back(j);
@@ -74,7 +95,7 @@ std::tuple<std::vector<vertex>, std::vector<primitive>> loop(std::vector<vertex>
 
       // Find the primitives that contains both the current vertex and vi
       std::vector<primitive> primitives_vi;
-      for (int k = 0; k < primitives.size(); k++)
+      for (int k = 0; k < (int)primitives.size(); k++)
       {
         if (primitives[k].a == i && primitives[k].b == edges[current_edge].v1)
           primitives_vi.push_back(primitives[k]);
@@ -87,7 +108,7 @@ std::tuple<std::vector<vertex>, std::vector<primitive>> loop(std::vector<vertex>
       vertex e = vertex(3.0 / 8.0 * (v.x + vi.x), 3.0 / 8.0 * (v.y + vi.y), 3.0 / 8.0 * (v.z + vi.z));
 
       // For each primitive
-      for (int l = 0; l < primitives_vi.size(); l++)
+      for (int l = 0; l < (int)primitives_vi.size(); l++)
       {
         int third_vertex; // vertex that is not the current vertex and not vi
         if (primitives_vi[l].a != i && primitives_vi[l].a != edges[current_edge].v1)
@@ -107,6 +128,7 @@ std::tuple<std::vector<vertex>, std::vector<primitive>> loop(std::vector<vertex>
       edges[current_edge].e = new_vertices.size() - 1;
     }
   }
+  */
 
   return std::make_tuple(new_vertices, new_primitives);
 }
