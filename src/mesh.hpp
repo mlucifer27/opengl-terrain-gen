@@ -11,10 +11,10 @@
 struct vertex
 {
   float x, y, z;
-  float r, g, b, a;
-  vertex() : x(0.0f), y(0.0f), z(0.0f), r(1.0f), g(1.0f), b(1.0f), a(1.0f) {}
-  vertex(float x, float y, float z) : x(x), y(y), z(z), r(1.0f), g(1.0f), b(1.0f), a(1.0f) {}
-  vertex(float x, float y, float z, float r, float g, float b, float a) : x(x), y(y), z(z), r(r), g(g), b(b), a(a) {}
+  float r, g, b;
+  vertex() : x(0.0f), y(0.0f), z(0.0f), r(1.0f), g(1.0f), b(1.0f) {}
+  vertex(float x, float y, float z) : x(x), y(y), z(z), r(1.0f), g(1.0f), b(1.0f) {}
+  vertex(float x, float y, float z, float r, float g, float b) : x(x), y(y), z(z), r(r), g(g), b(b) {}
 };
 
 /**

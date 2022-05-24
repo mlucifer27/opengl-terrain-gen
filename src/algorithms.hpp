@@ -21,6 +21,11 @@ std::tuple<std::vector<vertex>, std::vector<primitive>> wave(std::vector<vertex>
 std::tuple<std::vector<vertex>, std::vector<primitive>> loop(std::vector<vertex> vertices, std::vector<primitive> primitives);
 
 /**
+ * @brief Subdivides a mesh using a blur algorithm.
+ */
+std::tuple<std::vector<vertex>, std::vector<primitive>> blur(std::vector<vertex> vertices, std::vector<primitive> primitives);
+
+/**
  * @brief Subdivides a mesh using a simple subdivision algorithm.
  */
 std::tuple<std::vector<vertex>, std::vector<primitive>> simpleSubd(std::vector<vertex> vertices, std::vector<primitive> primitives);

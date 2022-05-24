@@ -45,7 +45,7 @@ void Terrain::updateMesh()
     for (int j = 0; j < columns; j++)
     {
       float height = heightMap[i * columns + j];
-      vertices[i * columns + j] = vertex(j + originX, height, i + originY, 0.5f, 0.2f, 0.2f, 1.0f);
+      vertices[i * columns + j] = vertex(j + originX, height, i + originY, 1.0f, 0.2f, 0.2f);
 
       // Update the max and min height
       if (height > maxHeight)
@@ -73,6 +73,7 @@ void Terrain::updateMesh()
   for (int i = 0; i < subdivisions; i++)
   {
     mesh.subdivide(&simpleSubd);
+    mesh.subdivide(&blur);
   }
 }
 

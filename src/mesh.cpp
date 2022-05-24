@@ -50,22 +50,22 @@ void Mesh::draw()
     glPolygonMode(GL_FRONT_AND_BACK, GL_LINE); // activate wireframe mode
   glPushMatrix();
   {
-    // Bind the vertex buffer
+    // Draw the colored vertices and primitives
     glBindBuffer(GL_ARRAY_BUFFER, vertex_buffer);
-    // Enable the vertex attribute arrays
+    glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, primitive_buffer);
+
     glEnableVertexAttribArray(0);
     glEnableVertexAttribArray(1);
-    // Set the vertex attribute pointers
-    glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, sizeof(vertex), (void *)0);
-    glVertexAttribPointer(1, 4, GL_FLOAT, GL_FALSE, sizeof(vertex), (void *)12); // vertex color doesn't work atm
 
-    // Bind the primitive buffer
-    glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, primitive_buffer);
-    // Draw the primitives
+    glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, sizeof(vertex), (void *)0);
+    glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, sizeof(vertex), (void *)12);
+
     glDrawElements(GL_TRIANGLES, primitives.size() * 3, GL_UNSIGNED_INT, (void *)0);
-    // Disable the vertex attribute arrays
+
     glDisableVertexAttribArray(0);
-    glDisableVertexAttribArray(1);
+
+    glBindBuffer(GL_ARRAY_BUFFER, 0);
+    glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
   }
   glPopMatrix();
   if (this->wireframe)
