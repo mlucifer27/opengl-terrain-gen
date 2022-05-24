@@ -67,7 +67,7 @@ public:
   /**
    * Print the heightmap.
    */
-  void printHeightMap(char *message);
+  void printHeightMap(std::string message);
   /**
    * Set the level of detail of the terrain (0 = lowest).
    */

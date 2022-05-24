@@ -15,6 +15,10 @@ struct vertex
   vertex() : x(0.0f), y(0.0f), z(0.0f), r(1.0f), g(1.0f), b(1.0f) {}
   vertex(float x, float y, float z) : x(x), y(y), z(z), r(1.0f), g(1.0f), b(1.0f) {}
   vertex(float x, float y, float z, float r, float g, float b) : x(x), y(y), z(z), r(r), g(g), b(b) {}
+  bool equals(vertex v)
+  {
+    return x == v.x && y == v.y && z == v.z;
+  }
 };
 
 /**
@@ -26,6 +30,10 @@ struct primitive
   int a, b, c;
   primitive() : a(-1), b(-1), c(-1) {}
   primitive(int a, int b, int c) : a(a), b(b), c(c) {}
+  bool equals(primitive p)
+  {
+    return a == p.a && b == p.b && c == p.c;
+  }
 };
 
 /**
@@ -89,9 +97,9 @@ public:
    */
   void setWireframe(bool wireframe);
   /**
-   * Subdivide the mesh.
+   * Apply a modidier to the mesh.
    */
-  void subdivide(std::tuple<std::vector<vertex>, std::vector<primitive>> (*algorithm)(std::vector<vertex> vertices, std::vector<primitive> primitives));
+  void apply(std::tuple<std::vector<vertex>, std::vector<primitive>> (*algorithm)(std::vector<vertex> vertices, std::vector<primitive> primitives), int iterations);
 };
 
 #endif // MESH_HPP

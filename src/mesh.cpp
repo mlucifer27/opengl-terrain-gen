@@ -7,6 +7,8 @@
 #include <GL/glu.h>
 #include <GLFW/glfw3.h>
 #include <tuple>
+#include <thread>
+#include <iostream>
 
 Mesh::Mesh()
 {
@@ -101,8 +103,14 @@ void Mesh::setWireframe(bool wireframe)
   this->wireframe = wireframe;
 }
 
-void Mesh::subdivide(std::tuple<std::vector<vertex>, std::vector<primitive>> (*algorithm)(std::vector<vertex> vertices, std::vector<primitive> primitives))
+void Mesh::apply(std::tuple<std::vector<vertex>, std::vector<primitive>> (*algorithm)(std::vector<vertex> vertices, std::vector<primitive> primitives), int iterations)
 {
-  std::tie(vertices, primitives) = algorithm(vertices, primitives);
+  for (int i = 0; i < iterations; i++)
+  {
+    std::tuple<std::vector<vertex>, std::vector<primitive>> result = algorithm(vertices, primitives);
+    this->vertices = std::get<0>(result);
+    this->primitives = std::get<1>(result);
+    std::cout << "Iteration " << i << " out of " << iterations << std::endl;
+  }
   updateGLBuffers();
 }

@@ -70,11 +70,8 @@ void Terrain::updateMesh()
   mesh.setVertices(std::vector<vertex>(vertices, vertices + rows * columns));
   mesh.setPrimitives(std::vector<primitive>(primitives, primitives + (rows - 1) * (columns - 1) * 2));
   // Apply subdivision
-  for (int i = 0; i < subdivisions; i++)
-  {
-    mesh.subdivide(&simpleSubd);
-    mesh.subdivide(&blur);
-  }
+  mesh.apply(&subdivision, subdivisions);
+  mesh.apply(&blur, 2 * subdivisions);
 }
 
 void Terrain::draw()
@@ -128,7 +125,7 @@ std::vector<float> Terrain::getHeightMap()
   return heightMap;
 }
 
-void Terrain::printHeightMap(char *message = "Heightmap: ")
+void Terrain::printHeightMap(std::string message = "Heightmap: ")
 {
   std::cout << message << std::endl;
   for (int i = 0; i < rows; i++)

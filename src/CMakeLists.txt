@@ -11,6 +11,8 @@ message(STATUS "GLFW3_LIBRARIES: ${GLFW3_LIBRARIES}")
 
 find_package(GLEW REQUIRED)
 
+SET(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -pthread")
+
 if(APPLE)
   add_definitions(-Wno-deprecated-declarations)
 endif()

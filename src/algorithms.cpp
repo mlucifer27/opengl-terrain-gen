@@ -2,6 +2,7 @@
 #include "geomutils.hpp"
 
 #include <list>
+#include <iterator>
 #include <algorithm>
 #include <map>
 #include <math.h>
@@ -89,7 +90,7 @@ std::tuple<std::vector<vertex>, std::vector<primitive>> blur(std::vector<vertex>
   return std::make_tuple(new_vertices, new_primitives);
 }
 
-std::tuple<std::vector<vertex>, std::vector<primitive>> loop(std::vector<vertex> vertices, std::vector<primitive> primitives)
+std::tuple<std::vector<vertex>, std::vector<primitive>> loopSub(std::vector<vertex> vertices, std::vector<primitive> primitives)
 {
   // Create the new vertices (initialize with the original vertices)
   std::vector<vertex> new_vertices;
@@ -127,35 +128,67 @@ std::tuple<std::vector<vertex>, std::vector<primitive>> loop(std::vector<vertex>
   return std::make_tuple(new_vertices, new_primitives);
 }
 
-std::tuple<std::vector<vertex>, std::vector<primitive>> simpleSubd(std::vector<vertex> vertices, std::vector<primitive> primitives)
+std::tuple<std::vector<vertex>, std::vector<primitive>> subdivision(std::vector<vertex> vertices, std::vector<primitive> primitives)
 {
   // Create the new vertices (initialize with the original vertices)
   std::vector<vertex> new_vertices = vertices;
   // Create the new primitives (initialize with the original primitives)
-  std::vector<primitive> new_primitives = primitives;
+  std::vector<primitive> new_primitives;
 
   // For each primitive
   for (int i = 0; i < (int)primitives.size(); i++)
   {
     // Get the primitive's vertices
-    vertex v1 = vertices[primitives[i].a];
-    vertex v2 = vertices[primitives[i].b];
-    vertex v3 = vertices[primitives[i].c];
+    vertex a = vertices[primitives[i].a];
+    vertex b = vertices[primitives[i].b];
+    vertex c = vertices[primitives[i].c];
 
-    vertex v12 = vertex((v1.x + v2.x) / 2, (v1.y + v2.y) / 2, (v1.z + v2.z) / 2);
-    vertex v23 = vertex((v2.x + v3.x) / 2, (v2.y + v3.y) / 2, (v2.z + v3.z) / 2);
-    vertex v13 = vertex((v1.x + v3.x) / 2, (v1.y + v3.y) / 2, (v1.z + v3.z) / 2);
+    vertex vAB = vertex((a.x + b.x) / 2, (a.y + b.y) / 2, (a.z + b.z) / 2);
+    vertex vBC = vertex((b.x + c.x) / 2, (b.y + c.y) / 2, (b.z + c.z) / 2);
+    vertex vAC = vertex((a.x + c.x) / 2, (a.y + c.y) / 2, (a.z + c.z) / 2);
 
-    new_vertices.push_back(v12);
-    new_vertices.push_back(v23);
-    new_vertices.push_back(v13);
+    int vAB_index, vBC_index, vAC_index;
+    // Push the vertices if they are not already in the list,
+    // else retrieve the index of the vertex
+    if (std::count_if(new_vertices.begin(), new_vertices.end(), [&](vertex v)
+                      { return v.equals(vAB); }) == 0)
+    {
+      new_vertices.push_back(vAB);
+      vAB_index = new_vertices.size() - 1;
+    }
+    else
+    {
+      vAB_index = std::distance(new_vertices.begin(), std::find_if(new_vertices.begin(), new_vertices.end(), [&](vertex v)
+                                                                   { return v.equals(vAB); }));
+    }
+    if (std::count_if(new_vertices.begin(), new_vertices.end(), [&](vertex v)
+                      { return v.equals(vBC); }) == 0)
+    {
+      new_vertices.push_back(vBC);
+      vBC_index = new_vertices.size() - 1;
+    }
+    else
+    {
+      vBC_index = std::distance(new_vertices.begin(), std::find_if(new_vertices.begin(), new_vertices.end(), [&](vertex v)
+                                                                   { return v.equals(vBC); }));
+    }
+    if (std::count_if(new_vertices.begin(), new_vertices.end(), [&](vertex v)
+                      { return v.equals(vAC); }) == 0)
+    {
+      new_vertices.push_back(vAC);
+      vAC_index = new_vertices.size() - 1;
+    }
+    else
+    {
+      vAC_index = std::distance(new_vertices.begin(), std::find_if(new_vertices.begin(), new_vertices.end(), [&](vertex v)
+                                                                   { return v.equals(vAC); }));
+    }
 
-    int index = new_vertices.size() - 3;
     // Create the new primitive
-    new_primitives.push_back(primitive(primitives[i].a, index, index + 2));
-    new_primitives.push_back(primitive(index, index + 1, index + 2));
-    new_primitives.push_back(primitive(index, primitives[i].b, index + 1));
-    new_primitives.push_back(primitive(index + 1, primitives[i].c, index + 2));
+    new_primitives.push_back(primitive(primitives[i].a, vAB_index, vAC_index));
+    new_primitives.push_back(primitive(vAB_index, primitives[i].b, vBC_index));
+    new_primitives.push_back(primitive(vAB_index, vBC_index, vAC_index));
+    new_primitives.push_back(primitive(vBC_index, primitives[i].c, vAC_index));
   }
 
   return std::make_tuple(new_vertices, new_primitives);
