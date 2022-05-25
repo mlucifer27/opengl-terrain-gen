@@ -1,9 +1,21 @@
 #ifndef SUBDIVISION_HPP
 #define SUBDIVISION_HPP
 
-#include <tuple>
-#include <vector>
 #include "mesh.hpp"
+
+#include <vector>
+#include <tuple>
+#include <list>
+#include <iterator>
+#include <algorithm>
+#include <map>
+#include <math.h>
+#include <glm/glm.hpp>
+
+/**
+ * @brief Add noise to a mesh.
+ */
+std::tuple<std::vector<vertex>, std::vector<primitive>> additiveNoise(std::vector<vertex> vertices, std::vector<primitive> primitives);
 
 /**
  * @brief Subdivides a mesh using the Catmull-Clark algorithm.

@@ -92,9 +92,9 @@ void key_callback(GLFWwindow *window, int key, __attribute__((unused)) int scanc
     if (key == GLFW_KEY_R)
       terrain->randomize();
     if (key == GLFW_KEY_KP_ADD)
-      terrain->setSubdivisions(terrain->getSubdivisions() + 1);
+      terrain->setLod(terrain->getLod() + 1);
     if (key == GLFW_KEY_KP_SUBTRACT)
-      terrain->setSubdivisions(terrain->getSubdivisions() - 1);
+      terrain->setLod(terrain->getLod() - 1);
   }
   else if (action == GLFW_RELEASE)
   {
@@ -135,7 +135,8 @@ void initGL()
   glMatrixMode(GL_PROJECTION);
   glLoadIdentity();
   gluPerspective(65.0, (float)windowSize[0] / (float)windowSize[1], nearPlane, farPlane);
-  glShadeModel(GL_FLAT);
+  glEnable(GL_DEPTH_TEST);
+  glShadeModel(GL_SMOOTH);
   glMatrixMode(GL_MODELVIEW);
   glLoadIdentity();
 
@@ -176,7 +177,7 @@ int main(__attribute__((unused)) int argc, __attribute__((unused)) char **argv)
   {
 
     // Render
-    glClear(GL_COLOR_BUFFER_BIT);
+    glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
     render();
 

@@ -1,9 +1,15 @@
 #ifndef MESH_HPP
 #define MESH_HPP
 
-#include <vector>
-#include "GL/gl.h"
 #include "drawable.hpp"
+
+#include <vector>
+#include <GL/gl.h>
+#include <GL/glu.h>
+#include <GLFW/glfw3.h>
+#include <tuple>
+#include <thread>
+#include <iostream>
 
 /**
  * A vertex is a point in 3D space.
@@ -12,9 +18,11 @@ struct vertex
 {
   float x, y, z;
   float r, g, b;
-  vertex() : x(0.0f), y(0.0f), z(0.0f), r(1.0f), g(1.0f), b(1.0f) {}
-  vertex(float x, float y, float z) : x(x), y(y), z(z), r(1.0f), g(1.0f), b(1.0f) {}
-  vertex(float x, float y, float z, float r, float g, float b) : x(x), y(y), z(z), r(r), g(g), b(b) {}
+  float nx, ny, nz;
+  vertex() : x(0.0f), y(0.0f), z(0.0f), r(1.0f), g(1.0f), b(1.0f), nx(0.0f), ny(1.0f), nz(0.0f) {}
+  vertex(float x, float y, float z) : x(x), y(y), z(z), r(1.0f), g(1.0f), b(1.0f), nx(0.0f), ny(1.0f), nz(0.0f) {}
+  vertex(float x, float y, float z, float r, float g, float b) : x(x), y(y), z(z), r(r), g(g), b(b), nx(0.0f), ny(1.0f), nz(0.0f) {}
+  vertex(float x, float y, float z, float r, float g, float b, float nx, float ny, float nz) : x(x), y(y), z(z), r(r), g(g), b(b), nx(nx), ny(ny), nz(nz) {}
   bool equals(vertex v)
   {
     return x == v.x && y == v.y && z == v.z;
@@ -96,6 +104,10 @@ public:
    * Switch polygon mode (wireframe or fill).
    */
   void setWireframe(bool wireframe);
+  /**
+   * Get polygon mode (true = wireframe, false = fill).
+   */
+  bool getWireframe();
   /**
    * Apply a modidier to the mesh.
    */

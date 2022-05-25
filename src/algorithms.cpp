@@ -1,11 +1,5 @@
 #include "algorithms.hpp"
-#include "geomutils.hpp"
-
-#include <list>
-#include <iterator>
-#include <algorithm>
-#include <map>
-#include <math.h>
+#include "terrain.hpp"
 
 struct edge
 {
@@ -17,6 +11,25 @@ struct edge
     return (a == e.a && b == e.b) || (a == e.b && b == e.a);
   }
 };
+
+std::tuple<std::vector<vertex>, std::vector<primitive>> additiveNoise(std::vector<vertex> vertices, std::vector<primitive> primitives)
+{
+  // Create the new vertices
+  std::vector<vertex> new_vertices = vertices;
+  // Create the new primitives
+  std::vector<primitive> new_primitives = primitives;
+
+  // For each vertex
+  for (int i = 0; i < (int)vertices.size(); i++)
+  {
+    // Add noise
+    new_vertices[i].x += (rand() % 100) / 2000.0;
+    new_vertices[i].y += (rand() % 100) / 2000.0;
+    new_vertices[i].z += (rand() % 100) / 2000.0;
+  }
+
+  return std::make_tuple(new_vertices, new_primitives);
+}
 
 std::tuple<std::vector<vertex>, std::vector<primitive>> catmullClark(std::vector<vertex> vertices, std::vector<primitive> primitives)
 {
@@ -53,23 +66,23 @@ std::tuple<std::vector<vertex>, std::vector<primitive>> blur(std::vector<vertex>
   std::vector<primitive> new_primitives = primitives;
 
   // For each vertex
-  for (int i = 0; i < vertices.size(); i++)
+  for (int i = 0; i < (int)vertices.size(); i++)
   {
-    // Retrieve the vertex's neighbors
+    // Retrieve the vertex's horizontal and vertical neighbors (not diagonals)
     std::vector<int> neighbors;
     for (primitive p : primitives)
     {
       if (p.a == i || p.b == i || p.c == i)
       {
-        if (p.a != i)
+        if (p.a != i && (vertices[p.a].x == vertices[i].x || vertices[p.a].z == vertices[i].z))
         {
           neighbors.push_back(p.a);
         }
-        if (p.b != i)
+        if (p.b != i && (vertices[p.b].x == vertices[i].x || vertices[p.b].z == vertices[i].z))
         {
           neighbors.push_back(p.b);
         }
-        if (p.c != i)
+        if (p.c != i && (vertices[p.b].x == vertices[i].x || vertices[p.b].z == vertices[i].z))
         {
           neighbors.push_back(p.c);
         }
@@ -143,9 +156,31 @@ std::tuple<std::vector<vertex>, std::vector<primitive>> subdivision(std::vector<
     vertex b = vertices[primitives[i].b];
     vertex c = vertices[primitives[i].c];
 
-    vertex vAB = vertex((a.x + b.x) / 2, (a.y + b.y) / 2, (a.z + b.z) / 2);
-    vertex vBC = vertex((b.x + c.x) / 2, (b.y + c.y) / 2, (b.z + c.z) / 2);
-    vertex vAC = vertex((a.x + c.x) / 2, (a.y + c.y) / 2, (a.z + c.z) / 2);
+    glm::vec3 color;
+    vertex vAB = vertex(
+        (a.x + b.x) / 2, (a.y + b.y) / 2, (a.z + b.z) / 2,
+        0.0f, 0.0f, 0.0f,
+        (a.nx + b.nx) / 2, (a.ny + b.ny) / 2, (a.nz + b.nz) / 2);
+    color = Terrain::getColor(glm::vec3(vAB.nx, vAB.ny, vAB.nz), vAB.y);
+    vAB.r = color.r;
+    vAB.g = color.g;
+    vAB.b = color.b;
+    vertex vBC = vertex(
+        (b.x + c.x) / 2, (b.y + c.y) / 2, (b.z + c.z) / 2,
+        0.0f, 0.0f, 0.0f,
+        (b.nx + c.nx) / 2, (b.ny + c.ny) / 2, (b.nz + c.nz) / 2);
+    color = Terrain::getColor(glm::vec3(vBC.nx, vBC.ny, vBC.nz), vBC.y);
+    vBC.r = color.r;
+    vBC.g = color.g;
+    vBC.b = color.b;
+    vertex vAC = vertex(
+        (a.x + c.x) / 2, (a.y + c.y) / 2, (a.z + c.z) / 2,
+        0.0f, 0.0f, 0.0f,
+        (a.nx + c.nx) / 2, (a.ny + c.ny) / 2, (a.nz + c.nz) / 2);
+    color = Terrain::getColor(glm::vec3(vAC.nx, vAC.ny, vAC.nz), vAC.y);
+    vAC.r = color.r;
+    vAC.g = color.g;
+    vAC.b = color.b;
 
     int vAB_index, vBC_index, vAC_index;
     // Push the vertices if they are not already in the list,

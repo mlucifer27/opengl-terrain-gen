@@ -3,13 +3,6 @@
 
 #include "mesh.hpp"
 
-#include <GL/gl.h>
-#include <GL/glu.h>
-#include <GLFW/glfw3.h>
-#include <tuple>
-#include <thread>
-#include <iostream>
-
 Mesh::Mesh()
 {
   // Create vertex buffer
@@ -55,19 +48,33 @@ void Mesh::draw()
     // Draw the colored vertices and primitives
     glBindBuffer(GL_ARRAY_BUFFER, vertex_buffer);
     glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, primitive_buffer);
-
-    glEnableVertexAttribArray(0);
-    glEnableVertexAttribArray(1);
-
-    glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, sizeof(vertex), (void *)0);
-    glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, sizeof(vertex), (void *)12);
-
-    glDrawElements(GL_TRIANGLES, primitives.size() * 3, GL_UNSIGNED_INT, (void *)0);
-
-    glDisableVertexAttribArray(0);
-
+    glEnableClientState(GL_VERTEX_ARRAY);
+    glEnableClientState(GL_COLOR_ARRAY);
+    glEnableClientState(GL_NORMAL_ARRAY);
+    glVertexPointer(3, GL_FLOAT, sizeof(vertex), 0);
+    glColorPointer(3, GL_FLOAT, sizeof(vertex), (char *)NULL + sizeof(float) * 3);
+    glNormalPointer(GL_FLOAT, sizeof(vertex), (char *)NULL + sizeof(float) * 6);
+    glDrawElements(GL_TRIANGLES, primitives.size() * 3, GL_UNSIGNED_INT, 0);
+    glDisableClientState(GL_VERTEX_ARRAY);
+    glDisableClientState(GL_COLOR_ARRAY);
+    glDisableClientState(GL_NORMAL_ARRAY);
     glBindBuffer(GL_ARRAY_BUFFER, 0);
     glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
+
+    if (this->wireframe)
+    {
+      // draw the normals
+      for (int i = 0; i < (int)vertices.size(); i++)
+      {
+        glBegin(GL_LINES);
+        {
+          glColor3f(1.0f, 0.0f, 0.0f);
+          glVertex3f(vertices[i].x, vertices[i].y, vertices[i].z);
+          glVertex3f(vertices[i].x + vertices[i].nx, vertices[i].y + vertices[i].ny, vertices[i].z + vertices[i].nz);
+        }
+        glEnd();
+      }
+    }
   }
   glPopMatrix();
   if (this->wireframe)
@@ -103,6 +110,11 @@ void Mesh::setWireframe(bool wireframe)
   this->wireframe = wireframe;
 }
 
+bool Mesh::getWireframe()
+{
+  return wireframe;
+}
+
 void Mesh::apply(std::tuple<std::vector<vertex>, std::vector<primitive>> (*algorithm)(std::vector<vertex> vertices, std::vector<primitive> primitives), int iterations)
 {
   for (int i = 0; i < iterations; i++)
@@ -110,7 +122,7 @@ void Mesh::apply(std::tuple<std::vector<vertex>, std::vector<primitive>> (*algor
     std::tuple<std::vector<vertex>, std::vector<primitive>> result = algorithm(vertices, primitives);
     this->vertices = std::get<0>(result);
     this->primitives = std::get<1>(result);
-    std::cout << "Iteration " << i << " out of " << iterations << std::endl;
+    std::cout << "Iteration " << i + 1 << " out of " << iterations << std::endl;
   }
   updateGLBuffers();
 }

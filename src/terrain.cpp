@@ -2,27 +2,21 @@
 #define GL3_PROTOTYPES 1
 
 #include "terrain.hpp"
-#include "algorithms.hpp"
 
-#include <limits>
-#include <GL/gl.h>
-#include <GL/glu.h>
-#include <GLFW/glfw3.h>
-
-Terrain::Terrain(int rows, int columns)
+Terrain::Terrain(int rows, int cols)
 {
   this->rows = rows;
-  this->columns = columns;
+  this->cols = cols;
   // maxHeight is negative infinity
   this->maxHeight = -std::numeric_limits<float>::infinity();
   // minHeight is positive infinity
   this->minHeight = std::numeric_limits<float>::infinity();
   // Create the heightmap
-  this->heightMap = std::vector<float>(rows * columns);
+  this->heightMap = std::vector<float>(rows * cols);
   // Create the mesh (the primitives are triangles)
-  this->mesh = Mesh(rows * columns, (rows - 1) * (columns - 1) * 2);
+  this->mesh = Mesh(rows * cols, (rows - 1) * (cols - 1) * 2);
   // Temporary: set rendering mode to wireframe
-  mesh.setWireframe(true);
+  mesh.setWireframe(false);
   // Update the mesh
   updateMesh();
 }
@@ -33,19 +27,24 @@ Terrain::~Terrain()
 
 void Terrain::updateMesh()
 {
-  vertex vertices[rows * columns];
-  primitive primitives[(rows - 1) * (columns - 1) * 2];
+  vertex vertices[rows * cols];
+  primitive primitives[(rows - 1) * (cols - 1) * 2];
   // Shift the heightmap to the center of the mesh
   float originX = -((rows - 1) / 2.0f) * 1.0f;
-  float originY = -((columns - 1) / 2.0f) * 1.0f;
+  float originY = -((cols - 1) / 2.0f) * 1.0f;
   // For each row
   for (int i = 0; i < rows; i++)
   {
     // For each column
-    for (int j = 0; j < columns; j++)
+    for (int j = 0; j < cols; j++)
     {
-      float height = heightMap[i * columns + j];
-      vertices[i * columns + j] = vertex(j + originX, height, i + originY, 1.0f, 0.2f, 0.2f);
+      float height = heightMap[i * cols + j];
+      glm::vec3 normal = getNormal(i, j);
+      glm::vec3 color = getColor(normal, height);
+      vertices[i * cols + j] = vertex(
+          j + originX, height, i + originY,
+          color.x, color.y, color.y,
+          normal.x, normal.y, normal.z);
 
       // Update the max and min height
       if (height > maxHeight)
@@ -58,20 +57,88 @@ void Terrain::updateMesh()
       }
 
       // if the current vertex is not the last one
-      if (j < columns - 1 && i < rows - 1)
+      if (j < cols - 1 && i < rows - 1)
       {
         // Create the two triangles
-        primitives[(i * (columns - 1) + j) * 2] = primitive(i * columns + j, i * columns + j + 1, (i + 1) * columns + j + 1);
-        primitives[(i * (columns - 1) + j) * 2 + 1] = primitive(i * columns + j, (i + 1) * columns + j + 1, (i + 1) * columns + j);
+        primitives[(i * (cols - 1) + j) * 2] = primitive(i * cols + j, i * cols + j + 1, (i + 1) * cols + j + 1);
+        primitives[(i * (cols - 1) + j) * 2 + 1] = primitive(i * cols + j, (i + 1) * cols + j + 1, (i + 1) * cols + j);
       }
     }
   }
   // Set the vertices and primitives
-  mesh.setVertices(std::vector<vertex>(vertices, vertices + rows * columns));
-  mesh.setPrimitives(std::vector<primitive>(primitives, primitives + (rows - 1) * (columns - 1) * 2));
+  mesh.setVertices(std::vector<vertex>(vertices, vertices + rows * cols));
+  mesh.setPrimitives(std::vector<primitive>(primitives, primitives + (rows - 1) * (cols - 1) * 2));
   // Apply subdivision
-  mesh.apply(&subdivision, subdivisions);
-  mesh.apply(&blur, 2 * subdivisions);
+  mesh.apply(&subdivision, lod);
+  mesh.apply(&blur, 2 * lod);
+  mesh.apply(&additiveNoise, 1);
+}
+
+glm::vec3 Terrain::getColor(glm::vec3 normal, float height)
+{
+  glm::vec3 snow = glm::vec3(TERRAIN_COLOR_SNOW);
+  glm::vec3 grass = glm::vec3(TERRAIN_COLOR_GRASS);
+  glm::vec3 water = glm::vec3(TERRAIN_COLOR_WATER);
+  glm::vec3 rock = glm::vec3(TERRAIN_COLOR_ROCK);
+  glm::vec3 sand = glm::vec3(TERRAIN_COLOR_SAND);
+
+  float verticality = abs(glm::dot(normal, glm::vec3(0.0f, 1.0f, 0.0f)));
+  float lightIntensity = 0.5f * sin(M_PI * ((height - TERRAIN_WATER_HEIGHT) / (2.0f * TERRAIN_SNOW_HEIGHT - TERRAIN_WATER_HEIGHT)) - 0.5) + 0.75f;
+  if (height > TERRAIN_SNOW_HEIGHT)
+  {
+    return snow * lightIntensity;
+  }
+  else if (height < TERRAIN_WATER_HEIGHT)
+  {
+    return water * lightIntensity;
+  }
+  else if (verticality > 0.7f && verticality < 0.95f)
+  {
+    return grass * lightIntensity;
+  }
+  else if (verticality <= 0.7f)
+  {
+    return rock * lightIntensity;
+  }
+  else if (verticality >= 0.95f)
+  {
+    return sand * lightIntensity;
+  }
+}
+
+glm::vec3 Terrain::getNormal(int row, int column)
+{
+  // Get the height of the current vertex
+  float height = heightMap[row * cols + column];
+  // Get the height of the left vertex
+  float leftHeight = heightMap[row * cols + (column - 1)];
+  // Get the height of the right vertex
+  float rightHeight = heightMap[row * cols + (column + 1)];
+  // Get the height of the top vertex
+  float topHeight = heightMap[(row - 1) * cols + column];
+  // Get the height of the bottom vertex
+  float bottomHeight = heightMap[(row + 1) * cols + column];
+  // Compute the normal
+  glm::vec3 normal = glm::vec3(0.0f, 1.0f, 0.0f);
+  if (column > 0)
+  {
+    normal.x += (leftHeight - height) / 1.0f;
+  }
+  if (column < cols - 1)
+  {
+    normal.x += (rightHeight - height) / 1.0f;
+  }
+  if (row > 0)
+  {
+    normal.z += (topHeight - height) / 1.0f;
+  }
+  if (row < rows - 1)
+  {
+    normal.z += (bottomHeight - height) / 1.0f;
+  }
+  // Normalize the normal
+  normal = glm::normalize(normal);
+  return normal;
 }
 
 void Terrain::draw()
@@ -86,13 +153,13 @@ void Terrain::draw()
 
 void Terrain::randomize()
 {
-  std::vector<float> newHeightMap(rows * columns);
+  std::vector<float> newHeightMap(rows * cols);
   for (int i = 0; i < rows; i++)
   {
-    for (int j = 0; j < columns; j++)
+    for (int j = 0; j < cols; j++)
     {
       // Generate a random height between -1 and 1
-      newHeightMap[i * columns + j] = (rand() % 100) / 100.0;
+      newHeightMap[i * cols + j] = (rand() % 100) / 100.0;
     }
   }
   setHeightMap(newHeightMap);
@@ -103,14 +170,14 @@ void Terrain::randomize()
 void Terrain::setHeight(int x, int y, float height)
 {
   // Update the heightmap
-  heightMap[y * columns + x] = height;
+  heightMap[y * cols + x] = height;
   // Update the mesh
   updateMesh();
 }
 
 float Terrain::getHeight(int x, int y)
 {
-  return heightMap[x * columns + y];
+  return heightMap[x * cols + y];
 }
 
 void Terrain::setHeightMap(std::vector<float> heightMap)
@@ -130,27 +197,27 @@ void Terrain::printHeightMap(std::string message = "Heightmap: ")
   std::cout << message << std::endl;
   for (int i = 0; i < rows; i++)
   {
-    for (int j = 0; j < columns; j++)
+    for (int j = 0; j < cols; j++)
     {
-      std::cout << this->heightMap[i * columns + j] << ", ";
+      std::cout << this->heightMap[i * cols + j] << ", ";
     }
     std::cout << std::endl;
   }
 }
 
-void Terrain::setSubdivisions(int subdivisions)
+void Terrain::setLod(int lod)
 {
-  if (subdivisions >= 0)
+  if (lod >= 0)
   {
-    this->subdivisions = subdivisions;
-    // print the new number of subdivisions (for debugging)
-    std::cout << "Subdivisions: " << subdivisions << std::endl;
+    this->lod = lod;
+    // print the new number of lod (for debugging)
+    std::cout << "lod: " << lod << std::endl;
     // Update the mesh
     updateMesh();
   }
 }
 
-int Terrain::getSubdivisions()
+int Terrain::getLod()
 {
-  return subdivisions;
+  return lod;
 }
