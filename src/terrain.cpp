@@ -16,7 +16,7 @@ Terrain::Terrain(int rows, int cols)
   // Create the mesh (the primitives are triangles)
   this->mesh = Mesh(rows * cols, (rows - 1) * (cols - 1) * 2);
   // Temporary: set rendering mode to wireframe
-  mesh.setWireframe(false);
+  mesh.setWireframe(true);
   // Update the mesh
   updateMesh();
 }
@@ -82,9 +82,10 @@ glm::vec3 Terrain::getColor(glm::vec3 normal, float height)
   glm::vec3 rock = glm::vec3(TERRAIN_COLOR_ROCK);
   glm::vec3 sand = glm::vec3(TERRAIN_COLOR_SAND);
 
-  float verticality = abs(glm::dot(normal, glm::vec3(0.0f, 1.0f, 0.0f)));
-  float lightIntensity = 0.5f * sin(M_PI * ((height - TERRAIN_WATER_HEIGHT) / (2.0f * TERRAIN_SNOW_HEIGHT - TERRAIN_WATER_HEIGHT)) - 0.5) + 0.75f;
-  if (height > TERRAIN_SNOW_HEIGHT)
+  float terrainHorizontality = abs(glm::dot(normal, glm::vec3(0.0f, 1.0f, 0.0f)));
+  float lightIntensity = smoothstep(height, TERRAIN_WATER_HEIGHT, 1.2 * TERRAIN_SNOW_HEIGHT, 0.4f, 1.0f);
+  float heightError = (rand() % 100) / 400.0f - 0.125f;
+  if (height > TERRAIN_SNOW_HEIGHT * (1.0f + heightError) && terrainHorizontality > 0.3f)
   {
     return snow * lightIntensity;
   }
@@ -92,15 +93,15 @@ glm::vec3 Terrain::getColor(glm::vec3 normal, float height)
   {
     return water * lightIntensity;
   }
-  else if (verticality > 0.7f && verticality < 0.95f)
+  else if (terrainHorizontality > 0.7f && terrainHorizontality < 0.95f)
   {
     return grass * lightIntensity;
   }
-  else if (verticality <= 0.7f)
+  else if (terrainHorizontality <= 0.7f)
   {
     return rock * lightIntensity;
   }
-  else if (verticality >= 0.95f)
+  else if (terrainHorizontality >= 0.95f)
   {
     return sand * lightIntensity;
   }
@@ -126,7 +127,7 @@ glm::vec3 Terrain::getNormal(int row, int column)
   }
   if (column < cols - 1)
   {
-    normal.x += (rightHeight - height) / 1.0f;
+    normal.x -= (rightHeight - height) / 1.0f;
   }
   if (row > 0)
   {
@@ -134,7 +135,7 @@ glm::vec3 Terrain::getNormal(int row, int column)
   }
   if (row < rows - 1)
   {
-    normal.z += (bottomHeight - height) / 1.0f;
+    normal.z -= (bottomHeight - height) / 1.0f;
   }
   // Normalize the normal
   normal = glm::normalize(normal);
@@ -158,8 +159,8 @@ void Terrain::randomize()
   {
     for (int j = 0; j < cols; j++)
     {
-      // Generate a random height between -1 and 1
-      newHeightMap[i * cols + j] = (rand() % 100) / 100.0;
+      // Generate a random height between 0 and 2
+      newHeightMap[i * cols + j] = (rand() % 100) / 50.0;
     }
   }
   setHeightMap(newHeightMap);

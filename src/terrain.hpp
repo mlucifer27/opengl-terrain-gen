@@ -5,6 +5,7 @@
 #include "algorithms.hpp"
 #include "mesh.hpp"
 #include "drawable.hpp"
+#include "geomutils.hpp"
 
 #include <iostream>
 #include <cmath>
@@ -21,9 +22,11 @@
 #define TERRAIN_COLOR_SNOW 1, 1, 1
 #define TERRAIN_COLOR_WATER 0.09, 0.14, 0.29
 
-#define TERRAIN_SNOW_HEIGHT 0.5f
+#define TERRAIN_SNOW_HEIGHT 1.1f
 #define TERRAIN_GRASS_HEIGHT 0.2f
 #define TERRAIN_WATER_HEIGHT 0.0f
+
+#define TERRAIN_SNOW_HORIZONTALITY_THRESHOLD 0.38f
 
 class Terrain : public Drawable
 {

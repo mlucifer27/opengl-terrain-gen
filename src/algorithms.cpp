@@ -90,14 +90,20 @@ std::tuple<std::vector<vertex>, std::vector<primitive>> blur(std::vector<vertex>
     }
 
     // Compute the average position of the neighbors
+    float avg_x = vertices[i].x;
     float avg_y = vertices[i].y;
+    float avg_z = vertices[i].z;
     for (int neighborIndex : neighbors)
     {
+      avg_x += vertices[neighborIndex].x;
       avg_y += vertices[neighborIndex].y;
+      avg_z += vertices[neighborIndex].z;
     }
 
     // Set the new vertex's position to the average
+    new_vertices[i].x = avg_x / (neighbors.size() + 1);
     new_vertices[i].y = avg_y / (neighbors.size() + 1.0f);
+    new_vertices[i].z = avg_z / (neighbors.size() + 1.0f);
   }
 
   return std::make_tuple(new_vertices, new_primitives);
