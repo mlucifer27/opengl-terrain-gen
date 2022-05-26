@@ -33,8 +33,13 @@ int windowSize[2] = {800, 800};
 float nearPlane = 0.1f;
 float farPlane = 1000.0f;
 
+float t = 0.0f;
+
 Terrain *terrain;
 
+/**
+ * Place the camera in the scene
+ */
 void placeCamera()
 {
   camDistance *= camDistanceFactor;
@@ -43,6 +48,34 @@ void placeCamera()
   glTranslatef(0.f, 0.f, -camDistance);
   glRotatef(camAngleX, 1.f, 0.f, 0.f);
   glRotatef(camAngleY, 0.f, 1.f, 0.f);
+}
+
+/**
+ * Place the lighting in the scene.
+ */
+void placeLighting()
+{
+  GLfloat global_intensity = 0.4 * (exp(-1 / 2 * sin(t) * sin(t)) * sin(t) + 1.35);
+  GLfloat red_intensity = global_intensity + 0.25 * exp(-10 * sin(t) * sin(t)) - 0.1;
+  GLfloat light_ambient[] = {red_intensity, global_intensity, global_intensity, 1.0};
+  GLfloat light_diffuse_specular[] = {0.1 * red_intensity, 0.1 * global_intensity, 0.1 * global_intensity, 1.0};
+
+  // Light blue ambient light
+  glLightModelfv(GL_LIGHT_MODEL_AMBIENT, light_ambient);
+
+  // White directional light
+  GLfloat directionalLight[] = {sin(t / (M_PI * 365)), sin(t), cos(t), 0.0};
+  glLightfv(GL_LIGHT0, GL_POSITION, directionalLight);
+
+  glLightfv(GL_LIGHT0, GL_DIFFUSE, light_diffuse_specular);
+  glLightfv(GL_LIGHT0, GL_SPECULAR, light_diffuse_specular);
+
+  // Turn lights on
+  glEnable(GL_LIGHTING);
+  glEnable(GL_LIGHT0);
+
+  // Set clear color to match the sky
+  glClearColor(0.5 * light_ambient[0], 0.5 * light_ambient[1], 0.5 * light_ambient[2], light_ambient[3]);
 }
 
 /**
@@ -58,6 +91,9 @@ void render()
 
   // place the camera correctly
   placeCamera();
+
+  // place the lights
+  placeLighting();
 
   glPushMatrix();
 
@@ -135,8 +171,13 @@ void initGL()
   glMatrixMode(GL_PROJECTION);
   glLoadIdentity();
   gluPerspective(65.0, (float)windowSize[0] / (float)windowSize[1], nearPlane, farPlane);
+  // Enable depth test
   glEnable(GL_DEPTH_TEST);
-  glShadeModel(GL_SMOOTH);
+  // Gouraud shading
+  glEnable(GL_NORMALIZE);
+  // Enable color material blending
+  glEnable(GL_COLOR_MATERIAL);
+
   glMatrixMode(GL_MODELVIEW);
   glLoadIdentity();
 
@@ -175,6 +216,7 @@ int main(__attribute__((unused)) int argc, __attribute__((unused)) char **argv)
   // Loop until the user closes the window
   while (!glfwWindowShouldClose(window))
   {
+    t += 0.005f;
 
     // Render
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);

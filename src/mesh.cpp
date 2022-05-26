@@ -11,18 +11,20 @@ Mesh::Mesh()
   glGenBuffers(1, &primitive_buffer);
 }
 
-Mesh::Mesh(int vertices, int primitives) : Mesh()
+Mesh::Mesh(int vertices, int primitives, Material material) : Mesh()
 {
   this->vertices = std::vector<vertex>(vertices);
   this->primitives = std::vector<primitive>(primitives);
+  this->material = material;
   // Update the buffers
   updateGLBuffers();
 }
 
-Mesh::Mesh(std::vector<vertex> vertices, std::vector<primitive> primitives) : Mesh()
+Mesh::Mesh(std::vector<vertex> vertices, std::vector<primitive> primitives, Material material) : Mesh()
 {
   this->vertices = vertices;
   this->primitives = primitives;
+  this->material = material;
   // Update the buffers
   updateGLBuffers();
 }
@@ -45,6 +47,9 @@ void Mesh::draw()
     glPolygonMode(GL_FRONT_AND_BACK, GL_LINE); // activate wireframe mode
   glPushMatrix();
   {
+    // Apply the material
+    material.apply();
+
     // Draw the colored vertices and primitives
     glBindBuffer(GL_ARRAY_BUFFER, vertex_buffer);
     glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, primitive_buffer);
@@ -113,6 +118,11 @@ void Mesh::setWireframe(bool wireframe)
 bool Mesh::getWireframe()
 {
   return wireframe;
+}
+
+void Mesh::setMaterial(Material material)
+{
+  this->material = material;
 }
 
 void Mesh::apply(std::tuple<std::vector<vertex>, std::vector<primitive>> (*algorithm)(std::vector<vertex> vertices, std::vector<primitive> primitives), int iterations)

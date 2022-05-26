@@ -14,9 +14,16 @@ Terrain::Terrain(int rows, int cols)
   // Create the heightmap
   this->heightMap = std::vector<float>(rows * cols);
   // Create the mesh (the primitives are triangles)
-  this->mesh = Mesh(rows * cols, (rows - 1) * (cols - 1) * 2);
+  this->mesh = Mesh(
+      rows * cols,
+      (rows - 1) * (cols - 1) * 2,
+      Material(
+          glm::vec3(1.0f, 1.0f, 1.0f),
+          glm::vec3(1.0f, 1.0f, 1.0f),
+          glm::vec3(1.0f, 1.0f, 1.0f),
+          0.0f));
   // Temporary: set rendering mode to wireframe
-  mesh.setWireframe(true);
+  mesh.setWireframe(false);
   // Update the mesh
   updateMesh();
 }
@@ -70,7 +77,7 @@ void Terrain::updateMesh()
   mesh.setPrimitives(std::vector<primitive>(primitives, primitives + (rows - 1) * (cols - 1) * 2));
   // Apply subdivision
   mesh.apply(&subdivision, lod);
-  mesh.apply(&blur, 2 * lod);
+  mesh.apply(&blur, lod);
   mesh.apply(&additiveNoise, 1);
 }
 
@@ -93,15 +100,15 @@ glm::vec3 Terrain::getColor(glm::vec3 normal, float height)
   {
     return water * lightIntensity;
   }
-  else if (terrainHorizontality > 0.7f && terrainHorizontality < 0.95f)
+  else if (terrainHorizontality > 0.75f && terrainHorizontality < 0.9f)
   {
     return grass * lightIntensity;
   }
-  else if (terrainHorizontality <= 0.7f)
+  else if (terrainHorizontality <= 0.75f)
   {
     return rock * lightIntensity;
   }
-  else if (terrainHorizontality >= 0.95f)
+  else if (terrainHorizontality >= 0.9f)
   {
     return sand * lightIntensity;
   }

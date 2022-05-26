@@ -68,7 +68,7 @@ std::tuple<std::vector<vertex>, std::vector<primitive>> blur(std::vector<vertex>
   // For each vertex
   for (int i = 0; i < (int)vertices.size(); i++)
   {
-    // Retrieve the vertex's horizontal and vertical neighbors (not diagonals)
+    // Retrieve the vertex's horizontal and vertical neighbors (not diagonal)
     std::vector<int> neighbors;
     for (primitive p : primitives)
     {
@@ -89,21 +89,25 @@ std::tuple<std::vector<vertex>, std::vector<primitive>> blur(std::vector<vertex>
       }
     }
 
-    // Compute the average position of the neighbors
-    float avg_x = vertices[i].x;
-    float avg_y = vertices[i].y;
-    float avg_z = vertices[i].z;
+    // Average the vertex's neighbors
+    std::vector<float> vertexAttributes = vertices[i].getAttributes();
+    std::vector<float> neighborAttributes;
     for (int neighborIndex : neighbors)
     {
-      avg_x += vertices[neighborIndex].x;
-      avg_y += vertices[neighborIndex].y;
-      avg_z += vertices[neighborIndex].z;
+      neighborAttributes = vertices[neighborIndex].getAttributes();
+      for (int j = 0; j < (int)vertexAttributes.size(); j++)
+      {
+        vertexAttributes[j] += neighborAttributes[j];
+      }
     }
 
-    // Set the new vertex's position to the average
-    new_vertices[i].x = avg_x / (neighbors.size() + 1);
-    new_vertices[i].y = avg_y / (neighbors.size() + 1.0f);
-    new_vertices[i].z = avg_z / (neighbors.size() + 1.0f);
+    // Divide the vertex's attributes by the number of neighbors
+    for (int j = 0; j < (int)vertexAttributes.size(); j++)
+    {
+      vertexAttributes[j] /= (float)(neighbors.size() + 1);
+    }
+
+    new_vertices[i].setAttributes(vertexAttributes);
   }
 
   return std::make_tuple(new_vertices, new_primitives);

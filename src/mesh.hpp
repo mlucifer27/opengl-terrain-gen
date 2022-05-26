@@ -2,6 +2,7 @@
 #define MESH_HPP
 
 #include "drawable.hpp"
+#include "material.hpp"
 
 #include <vector>
 #include <GL/gl.h>
@@ -26,6 +27,22 @@ struct vertex
   bool equals(vertex v)
   {
     return x == v.x && y == v.y && z == v.z;
+  }
+  std::vector<float> getAttributes()
+  {
+    return {x, y, z, r, g, b, nx, ny, nz};
+  }
+  void setAttributes(std::vector<float> attributes)
+  {
+    x = attributes[0];
+    y = attributes[1];
+    z = attributes[2];
+    r = attributes[3];
+    g = attributes[4];
+    b = attributes[5];
+    nx = attributes[6];
+    ny = attributes[7];
+    nz = attributes[8];
   }
 };
 
@@ -56,6 +73,8 @@ private:
   GLuint vertex_buffer;
   /* The buffer containing the primitives. */
   GLuint primitive_buffer;
+  /* The material associated with the mesh. */
+  Material material;
   /* Vertices define the position of each point in the mesh. */
   std::vector<vertex> vertices;
   /* Primitives define the topology of the mesh. */
@@ -71,11 +90,11 @@ public:
   /**
    * Create a mesh with the given number of vertices and primitives.
    */
-  Mesh(int vertices, int primitives);
+  Mesh(int vertices, int primitives, Material material = Material());
   /**
    * Creates a mesh from the given vertices and primitives.
    */
-  Mesh(std::vector<vertex> vertices, std::vector<primitive> primitives);
+  Mesh(std::vector<vertex> vertices, std::vector<primitive> primitives, Material material = Material());
   /**
    * Destroy the mesh.
    */
@@ -108,6 +127,10 @@ public:
    * Get polygon mode (true = wireframe, false = fill).
    */
   bool getWireframe();
+  /**
+   * Set the material of the mesh.
+   */
+  void setMaterial(Material material);
   /**
    * Apply a modidier to the mesh.
    */
