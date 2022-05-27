@@ -82,5 +82,7 @@ Terrain obtenu par la même méthode que précédemment, auquel on a ajouté un 
 Même terrain, mais coloré en fonction de la normale et de la hauteur de chaque sommet.
 ![High resolution terrain (solid)](docs/res/terrain_highres.png)
 
+Terrain lissé par une version améliorée de l'algorithme de moyennage des attributs des sommets, avec éclairage.
+![Terrain Day Night cycle](docs/res/terrain_daynight.gif)
 ### Conclusion
 On peut voir que le terrain obtenu est très lisse, est relativement proche de ce que l'on pourrait rencontrer dans la réalité. Bien des améliorations sont envisageables, telles qu'une simulation d'érosion, ou encore une génération de textudocs/res/cartes de normales plus précises, cependant dans le cadre de ce projet, nous nous contenterons de cette simple démonstration de faisabilité.

@@ -57,13 +57,16 @@ void placeLighting()
 {
   GLfloat global_intensity = 0.4 * (exp(-1 / 2 * sin(t) * sin(t)) * sin(t) + 1.35);
   GLfloat red_intensity = global_intensity + 0.25 * exp(-10 * sin(t) * sin(t)) - 0.1;
-  GLfloat light_ambient[] = {red_intensity, global_intensity, global_intensity, 1.0};
+  GLfloat light_ambient[] = {red_intensity, global_intensity, 1.1 * global_intensity, 1.0};
   GLfloat light_diffuse_specular[] = {0.1 * red_intensity, 0.1 * global_intensity, 0.1 * global_intensity, 1.0};
 
-  // Light blue ambient light
+  // GLfloat light_ambient[] = {0.80, 1.22, 1.38, 1.0};
+  // GLfloat light_diffuse_specular[] = {0.05, 0.05, 0.05, 1.0};
+
+  // Ambient light
   glLightModelfv(GL_LIGHT_MODEL_AMBIENT, light_ambient);
 
-  // White directional light
+  // Directional light
   GLfloat directionalLight[] = {sin(t / (M_PI * 365)), sin(t), cos(t), 0.0};
   glLightfv(GL_LIGHT0, GL_POSITION, directionalLight);
 
@@ -177,6 +180,8 @@ void initGL()
   glEnable(GL_NORMALIZE);
   // Enable color material blending
   glEnable(GL_COLOR_MATERIAL);
+  // Enable smooth shading
+  glShadeModel(GL_SMOOTH);
 
   glMatrixMode(GL_MODELVIEW);
   glLoadIdentity();
@@ -216,7 +221,7 @@ int main(__attribute__((unused)) int argc, __attribute__((unused)) char **argv)
   // Loop until the user closes the window
   while (!glfwWindowShouldClose(window))
   {
-    t += 0.005f;
+    t += 0.01f;
 
     // Render
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);

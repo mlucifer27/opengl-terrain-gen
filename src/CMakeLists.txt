@@ -4,12 +4,9 @@ aux_source_directory(. CPP_FILES)
 add_executable(main ${CPP_FILES})
 
 find_package(OpenGL REQUIRED)
-message(STATUS "OPENGL_gl_LIBRARY: ${OPENGL_gl_LIBRARY}")
-
 find_package(glfw3 REQUIRED)
-message(STATUS "GLFW3_LIBRARIES: ${GLFW3_LIBRARIES}")
-
 find_package(GLEW REQUIRED)
+find_package(glm REQUIRED)
 
 SET(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -pthread")
 
