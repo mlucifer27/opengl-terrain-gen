@@ -26,7 +26,7 @@ Run the program:
 ## Rapport de projet - Interpolation de terrain
 ### Introduction
 Ce projet se donne pour but de générer procéduralement un terrain à partir d'un maillage de points de très faible résolution, en mettant en oeuvre divers modèles de subdivision de surface. Les technologies utilisées sont :
-- [OpenGL](https://www.khronos.org/opengl/wiki/OpenGL_Home)
+- [OpenGL](https://www.khronos.org/opengl/)
 - [Glfw](https://www.glfw.org/)
 - [Glm](https://glm.g-truc.net/)
 - [Glu](https://en.wikipedia.org/wiki/OpenGL_Utility_Library)
