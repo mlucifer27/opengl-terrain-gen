@@ -1,10 +1,10 @@
 # Terrain interpolation proof of concept
 
-This is a proof of concept for terrain interpolation. The documentation is written in french, but most of the comments are in english, so here goes nothing.
+This is a proof of concept for terrain interpolation. The documentation is written in French, but most of the comments are in English, so here goes nothing.
 
 ## Installation
 
-Setup the dependencies mentionned below, *ie* `OpenGL`, `GLFW`, `Glm`, and `Glu`. A bash script is available for debian/ubuntu-based systems at `scripts/deps_setup_debian.sh`.
+Set up the dependencies mentioned below, _i.e._ `OpenGL`, `GLFW`, `Glm`, and `Glu`. A bash script is available for Debian/Ubuntu-based systems at `scripts/deps_setup_debian.sh`.
 
 Build the project with `cmake` and `make`:
 
@@ -22,19 +22,22 @@ Run the program:
 ./src/main
 ```
 
+## Project Report - Terrain Interpolation
 
-## Rapport de projet - Interpolation de terrain
 ### Introduction
-Ce projet se donne pour but de générer procéduralement un terrain à partir d'un maillage de points de très faible résolution, en mettant en oeuvre divers modèles de subdivision de surface. Les technologies utilisées sont :
+
+This project aims to procedurally generate terrain from a very low-resolution point mesh, by implementing various surface subdivision models. The technologies used are:
+
 - [OpenGL](https://www.khronos.org/opengl/)
 - [Glfw](https://www.glfw.org/)
 - [Glm](https://glm.g-truc.net/)
 - [Glu](https://en.wikipedia.org/wiki/OpenGL_Utility_Library)
 
-L'intégralité de cette implémentation est réalisée en C++. Le code source est disponible sur [Github](https://www.github.com/bsodium/terrain-interpolation).
+The entire implementation is done in C++. The source code is available on [Github](https://www.github.com/mlucifer27/opengl-terrain-gen).
 
 ### Architecture
-Pour des raisons évidentes de lisibilité du code, le projet est organisé en plusieurs fichiers/classes, dont les rôles sont décrits ci-dessous.
+
+For obvious reasons of code readability, the project is organized into several files/classes, whose roles are described below.
 
 ```mermaid
 classDiagram
@@ -53,36 +56,41 @@ Terrain : rows
 Terrain : cols
 Terrain : randomize()
 ```
-Le fichier `main.cpp` contient le code principal du projet. Il crée un objet de type `Terrain` et l'affiche. La gestion de la fenêtre est réalisée par la librairie GLFW, et le rendu est effectué par OpenGL. L'utilisateur peut à tout moment déplacer la caméra et zoomer sur le terrain à l'aide des touches fléchées (rotation) et de <kbd>Z</kbd> ou <kbd>S</kbd> (zoom).  
 
-Le `lod` (level of detail), ou niveau de détail du terrain en français, est un paramètre qui détermine la résolution du terrain. Plus le niveau de détail est élevé, plus le terrain est lisse. Il s'agit d'un entier qui définit le nombre d'itérations de subdivision de surface à effectuer. Les touches <kbd>+</kbd> et <kbd>-</kbd> permettent ainsi de l'augmenter ou de le diminuer.  
+The file `main.cpp` contains the main project code. It creates an object of type `Terrain` and displays it. Window management is handled by the GLFW library, and rendering is performed with OpenGL. The user can move the camera and zoom into the terrain at any time using the arrow keys (rotation) and <kbd>Z</kbd> or <kbd>S</kbd> (zoom).
 
-Les algorithmes de subdivision utilisés sont très modulaires, et peuvent être aisément interchangés. Ils sont décrits dans le fichier `algorithms.hpp`. Dans le cadre de ce projet, nous nous étions donné pour but d'implémenter l'algorithme de subdivision de surface `Loop`. Cependant, par manque de temps, nous nous sommes rabattu sur une version simplifiée: on crée trois nouveaux sommets par triangle, ainsi que leur primitives associées, puis on "floute" le terrain par moyennage des coordonnées des sommets voisins.
-Le résultat obtenu est successivement:
-| algorithme appliqué    | résultat                                                             |
-| ---------------------- | -------------------------------------------------------------------- |
-| aucun                  | terrain très anguleux, de faible résolution                          |
-| subdivision naïve      | terrain très anguleux, mais de haute résolution                      |
-| subdivision + floutage | terrain lissé par la passe de "floutage" des coordonnées des sommets |
+The `lod` (level of detail) is a parameter that determines the terrain resolution. The higher the level of detail, the smoother the terrain. It is an integer defining the number of surface subdivision iterations to perform. The <kbd>+</kbd> and <kbd>-</kbd> keys allow you to increase or decrease it.
 
-### Réalisation
+The subdivision algorithms used are very modular and can easily be swapped. They are described in the file `algorithms.hpp`. For this project, our goal was to implement the `Loop` surface subdivision algorithm. However, due to time constraints, we opted for a simplified version: we create three new vertices per triangle, along with their associated primitives, then we “blur” the terrain by averaging the coordinates of neighboring vertices.
 
-Terrain généré aléatoirement (bruit blanc) avec une résolution de 10x10. On peut voir en blanc le terrain, en rouge les normales associées aux vertices.
+The results obtained are as follows:
+
+| Applied Algorithm      | Result                                                        |
+| ---------------------- | ------------------------------------------------------------- |
+| none                   | very angular terrain, low resolution                          |
+| naive subdivision      | very angular terrain, but high resolution                     |
+| subdivision + blurring | terrain smoothed by the “blurring” pass of vertex coordinates |
+
+### Implementation
+
+Terrain randomly generated (white noise) with a resolution of 10x10. The terrain appears in white, with vertex normals shown in red.
 ![Low resolution terrain (wireframe)](docs/res/terrain_lowres_wf.png)
 
-Même terrain, avec coloration des faces. Comme on peut le voir ici, sans interpolation préalable, ce modéle est inutilisable.
+Same terrain, with face coloring. As seen here, without prior interpolation, this model is unusable.
 ![Low resolution terrain (solid)](docs/res/terrain_lowres.png)
 
-Terrain lissé par la passe de floutage des coordonnées des sommets.
+Terrain smoothed through the blurring pass of vertex coordinates.
 ![High resolution terrain (wireframe)](docs/res/terrain_highres_wf_noiseless.png)
 
-Terrain obtenu par la même méthode que précédemment, auquel on a ajouté un bruit blanc de haute fréquence (simule les irrégularités du sol).
+Terrain obtained by the same method as before, with added high-frequency white noise (simulating ground irregularities).
 ![High resolution terrain + noise (wireframe)](docs/res/terrain_highres_wf.png)
 
-Même terrain, mais coloré en fonction de la normale et de la hauteur de chaque sommet.
+Same terrain, but colored based on each vertex’s normal and height.
 ![High resolution terrain (solid)](docs/res/terrain_highres.png)
 
-Terrain lissé par une version améliorée de l'algorithme de moyennage des attributs des sommets, avec éclairage.
+Terrain smoothed by an improved version of the vertex attribute averaging algorithm, with lighting.
 ![Terrain Day Night cycle](docs/res/terrain_daynight.gif)
+
 ### Conclusion
-On peut voir que le terrain obtenu est très lisse, est relativement proche de ce que l'on pourrait rencontrer dans la réalité. Bien des améliorations sont envisageables, telles qu'une simulation d'érosion, ou encore une génération de textures/de normales plus précise, cependant dans le cadre de ce projet, nous nous contenterons de cette simple démonstration de faisabilité.
+
+We can see that the terrain obtained is very smooth and fairly close to what we might encounter in reality. Many improvements are possible, such as simulating erosion or generating more precise textures and normals. However, for the purposes of this project, we will be content with this simple proof of feasibility.
